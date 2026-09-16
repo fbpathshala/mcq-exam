@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCQ Exam Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f3f6fb;
+  color:#1f2937;
+}
+.header{
+  background:#2563eb;
+  color:#fff;
+  text-align:center;
+  padding:20px;
+}
+.container{
+  max-width:1300px;
+  margin:25px auto;
+  padding:0 15px;
+}
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:20px;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  margin:7px 0;
+  border:1px solid #d1d5db;
+  border-radius:8px;
+  font-size:16px;
+}
+textarea{min-height:90px;resize:vertical}
+button{
+  border:0;
+  border-radius:8px;
+  padding:11px 17px;
+  font-size:15px;
+  cursor:pointer;
+  margin:3px;
+}
+.login,.primary,.refresh{background:#2563eb;color:#fff}
+.success-btn{background:#16a34a;color:#fff}
+.warning{background:#f59e0b;color:#fff}
+.danger{background:#dc2626;color:#fff}
+.secondary{background:#64748b;color:#fff}
+.logout{background:#dc2626;color:#fff;float:right}
+.hidden{display:none!important}
+.status{
+  padding:10px;
+  border-radius:8px;
+  background:#eff6ff;
+  color:#1d4ed8;
+  margin:12px 0;
+}
+.error{background:#fef2f2;color:#b91c1c}
+.success{background:#f0fdf4;color:#15803d}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  margin-bottom:20px;
+}
+.stat{
+  background:#fff;
+  padding:20px;
+  text-align:center;
+  border-radius:12px;
+  box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+.num{
+  font-size:30px;
+  font-weight:bold;
+  color:#2563eb;
+}
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+}
+.grid3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+}
+.grid4{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+}
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:end;
+}
+.table-wrap{
+  overflow-x:auto;
+  margin-top:15px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:900px;
+}
+th,td{
+  padding:10px;
+  border-bottom:1px solid #e5e7eb;
+  text-align:left;
+  vertical-align:top;
+}
+th{background:#f8fafc}
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:20px;
+  font-size:13px;
+  font-weight:bold;
+}
+.active{background:#dcfce7;color:#166534}
+.inactive{background:#fee2e2;color:#991b1b}
+.question-card{
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  padding:15px;
+  margin:10px 0;
+}
+.option{
+  background:#f8fafc;
+  padding:7px;
+  border-radius:6px;
+  margin:4px 0;
+}
+.preview-box{
+  max-height:450px;
+  overflow:auto;
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:10px;
+}
+.small{
+  font-size:13px;
+  color:#64748b;
+}
+label{
+  font-weight:bold;
+  display:block;
+  margin-top:5px;
+}
+@media(max-width:800px){
+  .stats,.grid2,.grid3,.grid4{
+    grid-template-columns:1fr;
+  }
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>📊 MCQ Exam — Admin Panel</h1>
+</div>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginBox" class="card">
+  <h2>🔐 Admin Login</h2>
+
+  <div id="loginStatus" class="status">
+    আপনার Admin Email ও Password দিন।
+  </div>
+
+  <input id="email" type="email" placeholder="Admin Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <button class="login" onclick="login()">Login</button>
+</div>
+
+
+<!-- PANEL -->
+<div id="panel" class="hidden">
+
+<div class="card">
+  <button class="logout" onclick="logout()">Logout</button>
+
+  <p>👤 Admin: <b id="adminEmail"></b></p>
+
+  <div id="status" class="status">
+    Admin Panel প্রস্তুত।
+  </div>
+</div>
+
+
+<!-- STATISTICS -->
+<div class="stats">
+
+  <div class="stat">
+    <div id="examCount" class="num">0</div>
+    <div>মোট Exam</div>
+  </div>
+
+  <div class="stat">
+    <div id="questionCount" class="num">0</div>
+    <div>মোট Question</div>
+  </div>
+
+  <div class="stat">
+    <div id="attempts" class="num">0</div>
+    <div>মোট পরীক্ষা</div>
+  </div>
+
+</div>
+
+
+<!-- EXAM MANAGEMENT -->
+<div class="card">
+
+<h2>📚 Exam Management</h2>
+
+<div class="form-grid">
+
+<div>
+<label>নতুন Exam-এর নাম</label>
+<input id="examTitle"
+       type="text"
+       placeholder="যেমন: বাংলাদেশ বিষয়াবলি — মডেল টেস্ট ১">
+</div>
+
+<button class="primary" onclick="createExam()">
+➕ Exam তৈরি করুন
+</button>
+
+</div>
+
+</div>
+
+
+<!-- EXAM LIST -->
+<div class="card">
+
+<h2>📋 Exam List</h2>
+
+<button class="refresh" onclick="loadExams()">🔄 Refresh</button>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Exam</th>
+<th>Settings</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="examList">
+<tr>
+<td colspan="4" style="text-align:center">Exam লোড হচ্ছে...</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+</div>
+
+
+<!-- EXAM SETTINGS -->
+<div class="card">
+
+<h2>⚙️ Exam Settings</h2>
+
+<p class="small">
+একটি Exam নির্বাচন করে তার মোট নম্বর, কাট মার্ক, সময়সীমা, Negative Mark এবং উত্তর দেখানোর নিয়ম পরিবর্তন করুন।
+</p>
+
+<select id="settingsExam" onchange="loadExamSettings()">
+<option value="">-- Exam নির্বাচন করুন --</option>
+</select>
+
+<div class="grid3">
+
+<div>
+<label>মোট মার্ক</label>
+<input id="totalMarks" type="number" min="0" step="0.01">
+</div>
+
+<div>
+<label>কাট মার্ক</label>
+<input id="passMark" type="number" min="0" step="0.01">
+</div>
+
+<div>
+<label>সময় সীমা (মিনিট)</label>
+<input id="durationMinutes" type="number" min="1">
+</div>
+
+<div>
+<label>প্রতি প্রশ্নের মার্ক</label>
+<input id="marksPerQuestion" type="number" min="0" step="0.01">
+</div>
+
+<div>
+<label>ভুল উত্তরের Negative Mark</label>
+<input id="negativeMark" type="number" min="0" step="0.01">
+</div>
+
+<div>
+<label>উত্তর দেখাবে?</label>
+<select id="showAnswers">
+<option value="true">হ্যাঁ</option>
+<option value="false">না</option>
+</select>
+</div>
+
+</div>
+
+<div class="grid3">
+
+<div>
+<label>পরীক্ষার তারিখ</label>
+<input id="examDate" type="date">
+</div>
+
+<div>
+<label>শুরু সময়</label>
+<input id="startTime" type="time">
+</div>
+
+<div>
+<label>শেষ সময়</label>
+<input id="endTime" type="time">
+</div>
+
+</div>
+
+<div class="grid2">
+
+<div>
+<label>প্রশ্ন Random হবে?</label>
+<select id="randomQuestions">
+<option value="false">না</option>
+<option value="true">হ্যাঁ</option>
+</select>
+</div>
+
+<div>
+<label>Option Random হবে?</label>
+<select id="randomOptions">
+<option value="false">না</option>
+<option value="true">হ্যাঁ</option>
+</select>
+</div>
+
+</div>
+
+<button class="success-btn" onclick="saveExamSettings()">
+💾 Settings Save করুন
+</button>
+
+</div>
+
+
+<!-- MANUAL QUESTION -->
+<div class="card">
+
+<h2>➕ Manual Question Entry</h2>
+
+<div class="grid2">
+
+<div>
+<label>Category</label>
+<select id="manualCategory">
+<option value="">-- Category নির্বাচন করুন --</option>
+</select>
+</div>
+
+<div>
+<label>Exam</label>
+<select id="manualExam">
+<option value="">-- Exam নির্বাচন করুন --</option>
+</select>
+</div>
+
+</div>
+
+<label>প্রশ্ন</label>
+<textarea id="manualQuestion"
+placeholder="প্রশ্ন লিখুন"></textarea>
+
+<div class="grid2">
+
+<div>
+<label>ক. Option</label>
+<input id="optionA" placeholder="ক.">
+</div>
+
+<div>
+<label>খ. Option</label>
+<input id="optionB" placeholder="খ.">
+</div>
+
+<div>
+<label>গ. Option</label>
+<input id="optionC" placeholder="গ.">
+</div>
+
+<div>
+<label>ঘ. Option</label>
+<input id="optionD" placeholder="ঘ.">
+</div>
+
+</div>
+
+<label>সঠিক উত্তর</label>
+<select id="manualCorrect">
+<option value="">-- সঠিক উত্তর নির্বাচন করুন --</option>
+<option value="A">ক</option>
+<option value="B">খ</option>
+<option value="C">গ</option>
+<option value="D">ঘ</option>
+</select>
+
+<button class="success-btn" onclick="saveManualQuestion()">
+💾 Question Save করুন
+</button>
+
+</div>
+
+
+<!-- BULK UPLOAD -->
+<div class="card">
+
+<h2>📤 CSV / Excel Bulk Upload</h2>
+
+<p>
+একসাথে অনেক প্রশ্ন Upload করুন। Category কলামে Category-এর নাম থাকলেই
+সিস্টেম স্বয়ংক্রিয়ভাবে Category অনুযায়ী Question Bank-এ সংরক্ষণ করবে।
+</p>
+
+<div class="status">
+<b>ফাইলের Column:</b><br>
+Category | Question | Option A | Option B | Option C | Option D | Correct Answer
+</div>
+
+<input id="fileInput"
+       type="file"
+       accept=".csv,.xlsx,.xls">
+
+<div id="uploadStatus" class="status">
+ফাইল নির্বাচন করুন।
+</div>
+
+<div id="uploadPreview" class="preview-box hidden"></div>
+
+<button class="primary" onclick="readUploadFile()">
+🔎 Preview
+</button>
+
+<button class="success-btn hidden" id="confirmUploadBtn" onclick="confirmUpload()">
+💾 Confirm & Upload
+</button>
+
+</div>
+
+
+<!-- QUESTION BANK -->
+<div class="card">
+
+<h2>🗃️ Question Bank</h2>
+
+<div class="grid3">
+
+<div>
+<label>Category Filter</label>
+<select id="filterCategory" onchange="loadQuestions()">
+<option value="">সব Category</option>
+</select>
+</div>
+
+<div>
+<label>Exam Filter</label>
+<select id="filterExam" onchange="loadQuestions()">
+<option value="">সব Exam</option>
+</select>
+</div>
+
+<div>
+<label>Search</label>
+<input id="questionSearch"
+       placeholder="প্রশ্ন খুঁজুন..."
+       oninput="loadQuestions()">
+</div>
+
+</div>
+
+<button class="refresh" onclick="loadQuestions()">
+🔄 Refresh
+</button>
+
+<button class="secondary" onclick="copySelectedQuestions()">
+📋 Selected Copy
+</button>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th><input type="checkbox" id="selectAll" onclick="toggleAllQuestions(this)"></th>
+<th>নং</th>
+<th>Category</th>
+<th>Question</th>
+<th>Options</th>
+<th>Correct</th>
+<th>Exam</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="questionList">
+<tr>
+<td colspan="8" style="text-align:center">
+Question লোড হচ্ছে...
+</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- RESULTS -->
+<div class="card">
+
+<h2>📝 পরীক্ষার ফলাফল</h2>
+
+<button class="refresh" onclick="loadResults()">
+🔄 Refresh
+</button>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>নাম</th>
+<th>ফেসবুক আইডি নাম</th>
+<th>নিজ জেলা</th>
+<th>মোবাইল নম্বর</th>
+<th>Exam</th>
+<th>স্কোর</th>
+<th>শতাংশ</th>
+<th>জমা দেওয়ার সময়</th>
+</tr>
+</thead>
+
+<tbody id="results">
+<tr>
+<td colspan="8" style="text-align:center">
+ফলাফল লোড হচ্ছে...
+</td>
+</tr>
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+
+<!-- EDIT MODAL -->
+<div id="editModal"
+     class="hidden"
+     style="
+     position:fixed;
+     inset:0;
+     background:rgba(0,0,0,.55);
+     padding:20px;
+     overflow:auto;
+     z-index:9999;">
+
+<div class="card"
+     style="max-width:800px;margin:30px auto;">
+
+<h2>✏️ Question Edit</h2>
+
+<input type="hidden" id="editId">
+
+<label>Category</label>
+<select id="editCategory"></select>
+
+<label>Exam</label>
+<select id="editExam"></select>
+
+<label>Question</label>
+<textarea id="editQuestion"></textarea>
+
+<div class="grid2">
+
+<div>
+<label>ক. Option</label>
+<input id="editA">
+</div>
+
+<div>
+<label>খ. Option</label>
+<input id="editB">
+</div>
+
+<div>
+<label>গ. Option</label>
+<input id="editC">
+</div>
+
+<div>
+<label>ঘ. Option</label>
+<input id="editD">
+</div>
+
+</div>
+
+<label>সঠিক উত্তর</label>
+<select id="editCorrect">
+<option value="A">ক</option>
+<option value="B">খ</option>
+<option value="C">গ</option>
+<option value="D">ঘ</option>
+</select>
+
+<br>
+
+<button class="success-btn" onclick="updateQuestion()">
+💾 Update
+</button>
+
+<button class="secondary" onclick="closeEdit()">
+Cancel
+</button>
+
+</div>
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://ydvbnalhcnfqpxkkmywr.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_xCbSWDkASsbUPl-WmygyMw_eVrJY_9a";
+
+const db =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+
+/* =========================
+   CATEGORIES
+========================= */
+
+const CATEGORIES = [
+"বাংলা সাহিত্য",
+"বাংলা ব্যাকরণ",
+"গণিত",
+"ইংরেজি",
+"বাংলাদেশ",
+"আন্তর্জাতিক",
+"বিজ্ঞান",
+"কম্পিউটার ও তথ্যপ্রযুক্তি",
+"সাম্প্রতিক প্রশ্নোত্তর",
+"ভূগোল"
+];
+
+let uploadRows = [];
+
+
+/* =========================
+   INIT
+========================= */
+
+function initCategories(){
+
+const ids = [
+"manualCategory",
+"filterCategory",
+"editCategory"
+];
+
+ids.forEach(id=>{
+
+const el =
+document.getElementById(id);
+
+if(!el) return;
+
+const first =
+el.options.length
+? el.options[0].outerHTML
+: "";
+
+el.innerHTML = first;
+
+CATEGORIES.forEach(cat=>{
+
+const opt =
+document.createElement("option");
+
+opt.value=cat;
+opt.textContent=cat;
+
+el.appendChild(opt);
+
+});
+
+});
+
+}
+
+
+function populateExamSelects(exams){
+
+const ids = [
+"settingsExam",
+"manualExam",
+"filterExam",
+"editExam"
+];
+
+ids.forEach(id=>{
+
+const el =
+document.getElementById(id);
+
+if(!el) return;
+
+let first="";
+
+if(id==="settingsExam")
+first='<option value="">-- Exam নির্বাচন করুন --</option>';
+
+if(id==="manualExam")
+first='<option value="">-- Exam নির্বাচন করুন --</option>';
+
+if(id==="filterExam")
+first='<option value="">সব Exam</option>';
+
+if(id==="editExam")
+first='<option value="">-- Exam নির্বাচন করুন --</option>';
+
+el.innerHTML=first;
+
+exams.forEach(exam=>{
+
+const opt =
+document.createElement("option");
+
+opt.value=exam.id;
+opt.textContent=exam.title;
+
+el.appendChild(opt);
+
+});
+
+});
+
+}
+
+
+/* =========================
+   LOGIN
+========================= */
+
+async function login(){
+
+const email =
+document.getElementById("email").value.trim();
+
+const password =
+document.getElementById("password").value;
+
+const box =
+document.getElementById("loginStatus");
+
+if(!email || !password){
+
+box.className="status error";
+box.textContent="Email এবং Password দিন।";
+return;
+}
+
+box.className="status";
+box.textContent="Login হচ্ছে...";
+
+const {data,error} =
+await db.auth.signInWithPassword({
+email,
+password
+});
+
+if(error){
+
+box.className="status error";
+box.textContent=
+"Login ব্যর্থ: "+error.message;
+
+return;
+}
+
+showPanel(data.user);
+}
+
+
+/* =========================
+   SHOW PANEL
+========================= */
+
+function showPanel(user){
+
+document
+.getElementById("loginBox")
+.classList.add("hidden");
+
+document
+.getElementById("panel")
+.classList.remove("hidden");
+
+document
+.getElementById("adminEmail")
+.textContent=user.email || "";
+
+initCategories();
+
+loadExams();
+loadResults();
+loadQuestions();
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout(){
+
+await db.auth.signOut();
+
+location.reload();
+
+}
+
+
+/* =========================
+   CREATE EXAM
+========================= */
+
+async function createExam(){
+
+const input =
+document.getElementById("examTitle");
+
+const title =
+input.value.trim();
+
+if(!title){
+alert("Exam-এর নাম লিখুন।");
+return;
+}
+
+const {error} =
+await db
+.from("exams")
+.insert({
+title:title,
+is_active:true,
+duration_minutes:30,
+total_marks:100,
+marks_per_question:1,
+negative_mark:0,
+pass_mark:0,
+show_answers:true,
+random_questions:false,
+random_options:false
+});
+
+if(error){
+
+alert(
+"Exam তৈরি করতে সমস্যা:\n"+
+error.message
+);
+
+return;
+}
+
+input.value="";
+
+alert("✅ Exam সফলভাবে তৈরি হয়েছে।");
+
+loadExams();
+
+}
+
+
+/* =========================
+   LOAD EXAMS
+========================= */
+
+async function loadExams(){
+
+const body =
+document.getElementById("examList");
+
+body.innerHTML=`
+<tr>
+<td colspan="4" style="text-align:center">
+Exam লোড হচ্ছে...
+</td>
+</tr>
+`;
+
+const {data,error} =
+await db
+.from("exams")
+.select(`
+id,
+title,
+is_active,
+exam_date,
+start_time,
+end_time,
+duration_minutes,
+total_marks,
+marks_per_question,
+negative_mark,
+pass_mark,
+show_answers,
+random_questions,
+random_options
+`)
+.order("id",{ascending:false});
+
+if(error){
+
+body.innerHTML=`
+<tr>
+<td colspan="4" style="color:#b91c1c">
+${safe(error.message)}
+</td>
+</tr>`;
+
+return;
+}
+
+document.getElementById("examCount").textContent =
+data?.length || 0;
+
+populateExamSelects(data || []);
+
+if(!data || data.length===0){
+
+body.innerHTML=`
+<tr>
+<td colspan="4" style="text-align:center">
+এখনো কোনো Exam তৈরি করা হয়নি।
+</td>
+</tr>`;
+
+return;
+}
+
+body.innerHTML="";
+
+data.forEach(exam=>{
+
+const status =
+exam.is_active
+? `<span class="badge active">Active</span>`
+: `<span class="badge inactive">Inactive</span>`;
+
+body.innerHTML += `
+
+<tr>
+
+<td>
+<b>${safe(exam.title)}</b>
+</td>
+
+<td>
+মার্ক: ${safe(exam.total_marks)}<br>
+সময়: ${safe(exam.duration_minutes)} মিনিট<br>
+Negative: ${safe(exam.negative_mark)}
+</td>
+
+<td>${status}</td>
+
+<td>
+
+<button
+class="primary"
+onclick="selectSettings('${exam.id}')">
+⚙️ Settings
+</button>
+
+<button
+class="${exam.is_active?'warning':'success-btn'}"
+onclick="toggleExam('${exam.id}',${!exam.is_active})">
+${exam.is_active?'⏸ Inactive':'▶ Active'}
+</button>
+
+<button
+class="danger"
+onclick="deleteExam('${exam.id}')">
+🗑 Delete
+</button>
+
+</td>
+
+</tr>`;
+
+});
+
+}
+
+
+/* =========================
+   SETTINGS
+========================= */
+
+function selectSettings(id){
+
+document.getElementById("settingsExam").value=id;
+
+loadExamSettings();
+
+window.scrollTo({
+top:document.getElementById("settingsExam").getBoundingClientRect().top+
+window.scrollY-100,
+behavior:"smooth"
+});
+
+}
+
+
+async function loadExamSettings(){
+
+const id =
+document.getElementById("settingsExam").value;
+
+if(!id) return;
+
+const {data,error} =
+await db
+.from("exams")
+.select("*")
+.eq("id",id)
+.single();
+
+if(error){
+
+alert(error.message);
+return;
+}
+
+document.getElementById("totalMarks").value =
+data.total_marks ?? 100;
+
+document.getElementById("passMark").value =
+data.pass_mark ?? 0;
+
+document.getElementById("durationMinutes").value =
+data.duration_minutes ?? 30;
+
+document.getElementById("marksPerQuestion").value =
+data.marks_per_question ?? 1;
+
+document.getElementById("negativeMark").value =
+data.negative_mark ?? 0;
+
+document.getElementById("showAnswers").value =
+String(data.show_answers ?? true);
+
+document.getElementById("examDate").value =
+data.exam_date || "";
+
+document.getElementById("startTime").value =
+data.start_time || "";
+
+document.getElementById("endTime").value =
+data.end_time || "";
+
+document.getElementById("randomQuestions").value =
+String(data.random_questions ?? false);
+
+document.getElementById("randomOptions").value =
+String(data.random_options ?? false);
+
+}
+
+
+async function saveExamSettings(){
+
+const id =
+document.getElementById("settingsExam").value;
+
+if(!id){
+
+alert("প্রথমে একটি Exam নির্বাচন করুন।");
+return;
+}
+
+const payload={
+
+total_marks:Number(
+document.getElementById("totalMarks").value || 0
+),
+
+pass_mark:Number(
+document.getElementById("passMark").value || 0
+),
+
+duration_minutes:Number(
+document.getElementById("durationMinutes").value || 30
+),
+
+marks_per_question:Number(
+document.getElementById("marksPerQuestion").value || 0
+),
+
+negative_mark:Number(
+document.getElementById("negativeMark").value || 0
+),
+
+show_answers:
+document.getElementById("showAnswers").value==="true",
+
+exam_date:
+document.getElementById("examDate").value || null,
+
+start_time:
+document.getElementById("startTime").value || null,
+
+end_time:
+document.getElementById("endTime").value || null,
+
+random_questions:
+document.getElementById("randomQuestions").value==="true",
+
+random_options:
+document.getElementById("randomOptions").value==="true"
+
+};
+
+const {error} =
+await db
+.from("exams")
+.update(payload)
+.eq("id",id);
+
+if(error){
+
+alert(
+"Settings Save হয়নি:\n"+
+error.message
+);
+
+return;
+}
+
+alert("✅ Exam Settings Save হয়েছে।");
+
+loadExams();
+
+}
+
+
+/* =========================
+   TOGGLE EXAM
+========================= */
+
+async function toggleExam(id,status){
+
+const {error} =
+await db
+.from("exams")
+.update({is_active:status})
+.eq("id",id);
+
+if(error){
+
+alert(error.message);
+return;
+}
+
+loadExams();
+
+}
+
+
+/* =========================
+   DELETE EXAM
+========================= */
+
+async function deleteExam(id){
+
+if(!confirm(
+"এই Exam Delete করতে চান?"
+)){
+return;
+}
+
+const {error} =
+await db
+.from("exams")
+.delete()
+.eq("id",id);
+
+if(error){
+
+alert(
+"Exam Delete করা যায়নি:\n"+
+error.message
+);
+
+return;
+}
+
+alert("✅ Exam Delete হয়েছে।");
+
+loadExams();
+
+}
+
+
+/* =========================
+   MANUAL QUESTION
+========================= */
+
+async function saveManualQuestion(){
+
+const category =
+document.getElementById("manualCategory").value;
+
+const examId =
+document.getElementById("manualExam").value;
+
+const question =
+document.getElementById("manualQuestion").value.trim();
+
+const a =
+document.getElementById("optionA").value.trim();
+
+const b =
+document.getElementById("optionB").value.trim();
+
+const c =
+document.getElementB
