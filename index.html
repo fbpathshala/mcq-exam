@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCQ Exam</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+    }
+
+    .container {
+      width: 94%;
+      max-width: 750px;
+      margin: 30px auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.08);
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 8px 0 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .primary {
+      width: 100%;
+      background: #2563eb;
+      color: white;
+    }
+
+    .primary:hover {
+      background: #1d4ed8;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+    }
+
+    .timer {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 9px 13px;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .question-number {
+      color: #555;
+      margin-bottom: 10px;
+    }
+
+    .question {
+      font-size: 21px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin: 10px 0;
+      background: #f1f5f9;
+      border: 2px solid transparent;
+    }
+
+    .option:hover {
+      background: #e2e8f0;
+    }
+
+    .option.selected {
+      border-color: #2563eb;
+      background: #dbeafe;
+    }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 25px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      background: #64748b;
+      color: white;
+    }
+
+    .submit-btn {
+      flex: 1;
+      background: #16a34a;
+      color: white;
+    }
+
+    .result {
+      text-align: center;
+    }
+
+    .score {
+      font-size: 42px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #16a34a;
+    }
+
+    .error {
+      color: #dc2626;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .success {
+      color: #15803d;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        margin: 15px auto;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .question {
+        font-size: 18px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- START SCREEN -->
+  <div id="startScreen" class="card">
+    <h1>📝 MCQ Exam</h1>
+    <p class="subtitle">বাংলাদেশ সাধারণ জ্ঞান - Demo</p>
+
+    <label>শিক্ষার্থীর নাম</label>
+    <input id="studentName" type="text" placeholder="আপনার নাম লিখুন">
+
+    <label>Student ID / রোল</label>
+    <input id="studentId" type="text" placeholder="আপনার ID লিখুন">
+
+    <button class="primary" onclick="startExam()">
+      পরীক্ষা শুরু করুন
+    </button>
+
+    <p id="startMessage"></p>
+  </div>
+
+
+  <!-- EXAM SCREEN -->
+  <div id="examScreen" class="card hidden">
+
+    <div class="topbar">
+      <strong id="studentDisplay"></strong>
+      <div class="timer">
+        সময়: <span id="timer">10:00</span>
+      </div>
+    </div>
+
+    <div class="question-number" id="questionNumber"></div>
+
+    <div class="question" id="questionText"></div>
+
+    <div id="options"></div>
+
+    <div class="navigation">
+      <button class="nav-btn" onclick="previousQuestion()">
+        ← পূর্বের
+      </button>
+
+      <button class="nav-btn" onclick="nextQuestion()">
+        পরের →
+      </button>
+
+      <button class="submit-btn" onclick="submitExam()">
+        Submit
+      </button>
+    </div>
+
+  </div>
+
+
+  <!-- RESULT SCREEN -->
+  <div id="resultScreen" class="card hidden result">
+
+    <h2>🎉 পরীক্ষা সম্পন্ন</h2>
+
+    <p id="resultStudent"></p>
+
+    <div class="score">
+      <span id="finalScore">0</span>
+    </div>
+
+    <p id="resultDetails"></p>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  // ==========================================
+  // SUPABASE CONNECTION
+  // ==========================================
+
+  const SUPABASE_URL =
+    "https://ydvbnalhcnfqpxkkmywr.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_xCbSWDkASsbUPl-WmygyMw_eVrJY_9a";
+
+  const supabaseClient =
+    window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+
+  // ==========================================
+  // EXAM VARIABLES
+  // ==========================================
+
+  let exam = null;
+  let questions = [];
+  let currentQuestion = 0;
+  let answers = {};
+  let timerSeconds = 600;
+  let timerInterval = null;
+
+  let studentName = "";
+  let studentId = "";
+
+
+  // ==========================================
+  // START EXAM
+  // ==========================================
+
+  async function startExam() {
+
+    studentName =
+      document.getElementById("studentName").value.trim();
+
+    studentId =
+      document.getElementById("studentId").value.trim();
+
+    const message =
+      document.getElementById("startMessage");
+
+    if (!studentName || !studentId) {
+      message.className = "error";
+      message.innerText =
+        "নাম এবং Student ID দুটিই লিখুন।";
+      return;
+    }
+
+    message.innerText = "পরীক্ষা যাচাই করা হচ্ছে...";
+
+
+    // Demo exam
+    const { data: exams, error: examError } =
+      await supabaseClient
+        .from("exams")
+        .select("*")
+        .eq("title", "বাংলাদেশ সাধারণ জ্ঞান - Demo")
+        .eq("is_active", true)
+        .limit(1);
+
+    if (examError || !exams || exams.length === 0) {
+      message.className = "error";
+      message.innerText =
+        "পরীক্ষা পাওয়া যাচ্ছে না।";
+      console.error(examError);
+      return;
+    }
+
+    exam = exams[0];
+
+
+    // Check student
+    let { data: student } =
+      await supabaseClient
+        .from("students")
+        .select("*")
+        .eq("student_id", studentId)
+        .limit(1);
+
+    if (!student || student.length === 0) {
+
+      const { data: newStudent, error } =
+        await supabaseClient
+          .from("students")
+          .insert({
+            student_id: studentId,
+            name: studentName
+          })
+          .select();
+
+      if (error) {
+        message.className = "error";
+        message.innerText =
+          "Student তৈরি করা যায়নি।";
+        console.error(error);
+        return;
+      }
+
+      student = newStudent;
+
+    } else {
+
+      student = student;
+
+    }
+
+
+    const studentRecord = student[0];
+
+
+    // ==========================================
+    // CHECK TODAY'S ATTEMPT
+    // ==========================================
+
+    const today =
+      new Date().toLocaleDateString("en-CA", {
+        timeZone: "Asia/Dhaka"
+      });
+
+    const { data: previousAttempts } =
+      await supabaseClient
+        .from("exam_attempts")
+        .select("*")
+        .eq("exam_id", exam.id)
+        .eq("student_id", studentRecord.id)
+        .eq("attempt_date", today)
+        .limit(1);
+
+    if (previousAttempts && previousAttempts.length > 0) {
+
+      message.className = "error";
+
+      message.innerText =
+        "আপনি আজ এই পরীক্ষা ইতিমধ্যে দিয়েছেন। আগামীকাল আবার দিতে পারবেন।";
+
+      return;
+    }
+
+
+    // ==========================================
+    // LOAD QUESTIONS
+    // ==========================================
+
+    const { data: questionData, error: questionError } =
+      await supabaseClient
+        .from("questions")
+        .select("*")
+        .eq("exam_id", exam.id)
+        .order("question_order");
+
+    if (questionError || !questionData || questionData.length === 0) {
+
+      message.className = "error";
+
+      message.innerText =
+        "কোনো প্রশ্ন পাওয়া যায়নি।";
+
+      console.error(questionError);
+
+      return;
+    }
+
+    questions = questionData;
+
+
+    // Timer
+    timerSeconds =
+      exam.duration_minutes * 60;
+
+
+    document.getElementById("studentDisplay").innerText =
+      studentName + " (" + studentId + ")";
+
+
+    document.getElementById("startScreen")
+      .classList.add("hidden");
+
+    document.getElementById("examScreen")
+      .classList.remove("hidden");
+
+
+    showQuestion();
+
+    startTimer();
+
+  }
+
+
+  // ==========================================
+  // SHOW QUESTION
+  // ==========================================
+
+  function showQuestion() {
+
+    const q = questions[currentQuestion];
+
+    document.getElementById("questionNumber").innerText =
+      "প্রশ্ন " +
+      (currentQuestion + 1) +
+      " / " +
+      questions.length;
+
+    document.getElementById("questionText").innerText =
+      q.question_text;
+
+
+    const options = document.getElementById("options");
+
+    options.innerHTML = "";
+
+
+    const optionList = [
+      ["A", q.option_a],
+      ["B", q.option_b],
+      ["C", q.option_c],
+      ["D", q.option_d]
+    ];
+
+
+    optionList.forEach(([letter, text]) => {
+
+      const button =
+        document.createElement("button");
+
+      button.className = "option";
+
+      button.innerText =
+        letter + ". " + text;
+
+
+      if (answers[q.id] === letter) {
+        button.classList.add("selected");
+      }
+
+
+      button.onclick = function() {
+
+        answers[q.id] = letter;
+
+        showQuestion();
+
+      };
+
+
+      options.appendChild(button);
+
+    });
+
+  }
+
+
+  // ==========================================
+  // NEXT
+  // ==========================================
+
+  function nextQuestion() {
+
+    if (currentQuestion < questions.length - 1) {
+
+      currentQuestion++;
+
+      showQuestion();
+
+    }
+
+  }
+
+
+  // ==========================================
+  // PREVIOUS
+  // ==========================================
+
+  function previousQuestion() {
+
+    if (currentQuestion > 0) {
+
+      currentQuestion--;
+
+      showQuestion();
+
+    }
+
+  }
+
+
+  // ==========================================
+  // TIMER
+  // ==========================================
+
+  function startTimer() {
+
+    updateTimer();
+
+    timerInterval =
+      setInterval(() => {
+
+        timerSeconds--;
+
+        updateTimer();
+
+        if (timerSeconds <= 0) {
+
+          clearInterval(timerInterval);
+
+          submitExam();
+
+        }
+
+      }, 1000);
+
+  }
+
+
+  function updateTimer() {
+
+    const minutes =
+      Math.floor(timerSeconds / 60);
+
+    const seconds =
+      timerSeconds % 60;
+
+    document.getElementById("timer").innerText =
+      String(minutes).padStart(2, "0") +
+      ":" +
+      String(seconds).padStart(2, "0");
+
+  }
+
+
+  // ==========================================
+  // SUBMIT EXAM
+  // ==========================================
+
+  async function submitExam() {
+
+    if (timerInterval) {
+      clearInterval(timerInterval);
+    }
+
+
+    let score = 0;
+
+
+    questions.forEach(q => {
+
+      if (answers[q.id] === q.correct_option) {
+
+        score++;
+
+      }
+
+    });
+
+
+    // Find student
+    const { data: studentData } =
+      await supabaseClient
+        .from("students")
+        .select("*")
+        .eq("student_id", studentId)
+        .limit(1);
+
+
+    if (!studentData || studentData.length === 0) {
+
+      alert("Student পাওয়া যায়নি।");
+
+      return;
+
+    }
+
+
+    const studentRecord =
+      studentData[0];
+
+
+    // Save attempt
+    const { data: attempt, error: attemptError } =
+      await supabaseClient
+        .from("exam_attempts")
+        .insert({
+          exam_id: exam.id,
+          student_id: studentRecord.id,
+          score: score,
+          total_questions: questions.length
+        })
+        .select()
+        .single();
+
+
+    if (attemptError) {
+
+      if (
+        attemptError.code === "23505"
+      ) {
+
+        alert(
+          "আপনি আজ এই পরীক্ষা ইতিমধ্যে দিয়েছেন।"
+        );
+
+      } else {
+
+        alert(
+          "Result সংরক্ষণ করা যায়নি।"
+        );
+
+        console.error(attemptError);
+
+      }
+
+      return;
+
+    }
+
+
+    // Save answers
+    const answerRows =
+      questions.map(q => ({
+
+        attempt_id: attempt.id,
+
+        question_id: q.id,
+
+        selected_option:
+          answers[q.id] || null,
+
+        is_correct:
+          answers[q.id] === q.correct_option
+
+      }));
+
+
+    await supabaseClient
+      .from("attempt_answers")
+      .insert(answerRows);
+
+
+    // Show result
+
+    document.getElementById("examScreen")
+      .classList.add("hidden");
+
+    document.getElementById("resultScreen")
+      .classList.remove("hidden");
+
+
+    document.getElementById("resultStudent")
+      .innerText =
+      studentName +
+      " (" +
+      studentId +
+      ")";
+
+
+    document.getElementById("finalScore")
+      .innerText =
+      score + " / " + questions.length;
+
+
+    const percentage =
+      Math.round(
+        (score / questions.length) * 100
+      );
+
+
+    document.getElementById("resultDetails")
+      .innerText =
+      "আপনার নম্বর: " +
+      score +
+      " | শতাংশ: " +
+      percentage +
+      "%";
+
+  }
+
+</script>
+
+</body>
+</html>
