@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCQ Exam Admin</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:#f3f6fb;
+color:#1f2937;
+}
+
+.header{
+background:#2563eb;
+color:#fff;
+text-align:center;
+padding:20px;
+}
+
+.container{
+max-width:1200px;
+margin:25px auto;
+padding:0 15px;
+}
+
+.card{
+background:#fff;
+border-radius:12px;
+padding:20px;
+margin-bottom:20px;
+box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border:1px solid #d1d5db;
+border-radius:8px;
+font-size:16px;
+}
+
+button{
+border:0;
+border-radius:8px;
+padding:11px 18px;
+font-size:15px;
+cursor:pointer;
+margin:3px;
+}
+
+.login{
+width:100%;
+background:#2563eb;
+color:#fff;
+}
+
+.logout{
+background:#dc2626;
+color:#fff;
+float:right;
+}
+
+.primary{
+background:#2563eb;
+color:#fff;
+}
+
+.success-btn{
+background:#16a34a;
+color:#fff;
+}
+
+.warning{
+background:#f59e0b;
+color:#fff;
+}
+
+.danger{
+background:#dc2626;
+color:#fff;
+}
+
+.refresh{
+background:#2563eb;
+color:#fff;
+}
+
+.status{
+padding:10px;
+border-radius:8px;
+background:#eff6ff;
+color:#1d4ed8;
+margin:12px 0;
+}
+
+.error{
+background:#fef2f2;
+color:#b91c1c;
+}
+
+.success{
+background:#f0fdf4;
+color:#15803d;
+}
+
+.hidden{
+display:none;
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+}
+
+.stat{
+background:#fff;
+padding:20px;
+text-align:center;
+border-radius:12px;
+box-shadow:0 3px 12px rgba(0,0,0,.08);
+}
+
+.num{
+font-size:30px;
+font-weight:bold;
+color:#2563eb;
+}
+
+.table-wrap{
+overflow-x:auto;
+margin-top:15px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+min-width:700px;
+}
+
+th,td{
+padding:10px;
+border-bottom:1px solid #e5e7eb;
+text-align:left;
+}
+
+th{
+background:#f8fafc;
+}
+
+.badge{
+display:inline-block;
+padding:5px 9px;
+border-radius:20px;
+font-size:13px;
+font-weight:bold;
+}
+
+.active{
+background:#dcfce7;
+color:#166534;
+}
+
+.inactive{
+background:#fee2e2;
+color:#991b1b;
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:1fr auto;
+gap:10px;
+align-items:end;
+}
+
+.form-grid input{
+margin:0;
+}
+
+@media(max-width:700px){
+
+.stats{
+grid-template-columns:1fr;
+}
+
+.form-grid{
+grid-template-columns:1fr;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>📊 MCQ Exam — Admin Panel</h1>
+</div>
+
+<div class="container">
+
+<!-- LOGIN -->
+
+<div id="loginBox" class="card">
+
+<h2>🔐 Admin Login</h2>
+
+<div id="loginStatus" class="status">
+আপনার Admin Email ও Password দিন।
+</div>
+
+<input
+id="email"
+type="email"
+placeholder="Admin Email">
+
+<input
+id="password"
+type="password"
+placeholder="Password">
+
+<button
+class="login"
+onclick="login()">
+Login
+</button>
+
+</div>
+
+
+<!-- ADMIN PANEL -->
+
+<div id="panel" class="hidden">
+
+<!-- ADMIN INFO -->
+
+<div class="card">
+
+<button
+class="logout"
+onclick="logout()">
+Logout
+</button>
+
+<p>
+👤 Admin:
+<b id="adminEmail"></b>
+</p>
+
+<div id="status" class="status">
+Admin Panel প্রস্তুত।
+</div>
+
+</div>
+
+
+<!-- STATISTICS -->
+
+<div class="stats">
+
+<div class="stat">
+<div id="examCount" class="num">0</div>
+<div>মোট Exam</div>
+</div>
+
+<div class="stat">
+<div id="attempts" class="num">0</div>
+<div>মোট পরীক্ষা</div>
+</div>
+
+<div class="stat">
+<div id="students" class="num">0</div>
+<div>অংশগ্রহণকারী</div>
+</div>
+
+</div>
+
+
+<!-- EXAM MANAGEMENT -->
+
+<div class="card">
+
+<h2>📚 Exam Management</h2>
+
+<div class="form-grid">
+
+<div>
+<label>
+<b>নতুন Exam-এর নাম</b>
+</label>
+
+<input
+id="examTitle"
+type="text"
+placeholder="যেমন: বাংলাদেশ বিষয়াবলি — মডেল টেস্ট ১">
+</div>
+
+<button
+class="primary"
+onclick="createExam()">
+➕ Exam তৈরি করুন
+</button>
+
+</div>
+
+</div>
+
+
+<!-- EXAM LIST -->
+
+<div class="card">
+
+<h2>📋 Exam List</h2>
+
+<button
+class="refresh"
+onclick="loadExams()">
+🔄 Refresh
+</button>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Exam</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+</thead>
+
+<tbody id="examList">
+
+<tr>
+<td colspan="3" style="text-align:center">
+Exam লোড হচ্ছে...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- RESULTS -->
+
+<div class="card">
+
+<h2>📝 পরীক্ষার ফলাফল</h2>
+
+<button
+class="refresh"
+onclick="loadResults()">
+🔄 Refresh
+</button>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+
+<tr>
+<th>নাম</th>
+<th>ফেসবুক আইডি নাম</th>
+<th>নিজ জেলা</th>
+<th>মোবাইল নম্বর</th>
+<th>Exam</th>
+<th>স্কোর</th>
+<th>শতাংশ</th>
+<th>জমা দেওয়ার সময়</th>
+</tr>
+
+</thead>
+
+<tbody id="results">
+
+<tr>
+<td colspan="8" style="text-align:center">
+ফলাফল লোড হচ্ছে...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+"https://ydvbnalhcnfqpxkkmywr.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_xCbSWDkASsbUPl-WmygyMw_eVrJY_9a";
+
+const db =
+supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+
+/* =========================
+   LOGIN
+========================= */
+
+async function login(){
+
+const email =
+document.getElementById("email").value.trim();
+
+const password =
+document.getElementById("password").value;
+
+const box =
+document.getElementById("loginStatus");
+
+if(!email || !password){
+
+box.className="status error";
+
+box.textContent=
+"Email এবং Password দিন।";
+
+return;
+}
+
+box.className="status";
+
+box.textContent=
+"Login হচ্ছে...";
+
+const {data,error} =
+await db.auth.signInWithPassword({
+
+email:email,
+password:password
+
+});
+
+if(error){
+
+box.className="status error";
+
+box.textContent=
+"Login ব্যর্থ: "+error.message;
+
+return;
+}
+
+showPanel(data.user);
+
+}
+
+
+/* =========================
+   SHOW PANEL
+========================= */
+
+function showPanel(user){
+
+document
+.getElementById("loginBox")
+.classList.add("hidden");
+
+document
+.getElementById("panel")
+.classList.remove("hidden");
+
+document
+.getElementById("adminEmail")
+.textContent=
+user.email || "";
+
+loadExams();
+
+loadResults();
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout(){
+
+await db.auth.signOut();
+
+document
+.getElementById("panel")
+.classList.add("hidden");
+
+document
+.getElementById("loginBox")
+.classList.remove("hidden");
+
+}
+
+
+/* =========================
+   CREATE EXAM
+========================= */
+
+async function createExam(){
+
+const input =
+document.getElementById("examTitle");
+
+const title =
+input.value.trim();
+
+if(!title){
+
+alert("Exam-এর নাম লিখুন।");
+
+return;
+}
+
+const {data,error} =
+await db
+.from("exams")
+.insert({
+
+title:title,
+is_active:true
+
+})
+.select()
+.single();
+
+if(error){
+
+alert(
+"Exam তৈরি করতে সমস্যা:\n"+
+error.message
+);
+
+return;
+}
+
+input.value="";
+
+alert(
+"✅ Exam সফলভাবে তৈরি হয়েছে।"
+);
+
+loadExams();
+
+}
+
+
+/* =========================
+   LOAD EXAMS
+========================= */
+
+async function loadExams(){
+
+const body =
+document.getElementById("examList");
+
+body.innerHTML=`
+<tr>
+<td colspan="3" style="text-align:center">
+Exam লোড হচ্ছে...
+</td>
+</tr>
+`;
+
+const {data,error} =
+await db
+.from("exams")
+.select("id,title,is_active")
+.order("id",{ascending:false});
+
+if(error){
+
+body.innerHTML=`
+<tr>
+<td colspan="3" style="text-align:center;color:#b91c1c">
+Exam লোড করতে সমস্যা:<br>
+${safe(error.message)}
+</td>
+</tr>
+`;
+
+return;
+}
+
+document
+.getElementById("examCount")
+.textContent=
+data ? data.length : 0;
+
+if(!data || data.length===0){
+
+body.innerHTML=`
+<tr>
+<td colspan="3" style="text-align:center">
+এখনো কোনো Exam তৈরি করা হয়নি।
+</td>
+</tr>
+`;
+
+return;
+}
+
+body.innerHTML="";
+
+data.forEach(exam=>{
+
+const status =
+exam.is_active
+? `<span class="badge active">Active</span>`
+: `<span class="badge inactive">Inactive</span>`;
+
+const action =
+exam.is_active
+
+? `<button
+class="warning"
+onclick="toggleExam('${exam.id}',false)">
+⏸ Inactive
+</button>`
+
+: `<button
+class="success-btn"
+onclick="toggleExam('${exam.id}',true)">
+▶ Active
+</button>`;
+
+body.innerHTML += `
+
+<tr>
+
+<td>
+<b>${safe(exam.title)}</b>
+</td>
+
+<td>
+${status}
+</td>
+
+<td>
+
+${action}
+
+<button
+class="danger"
+onclick="deleteExam('${exam.id}')">
+🗑 Delete
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+
+/* =========================
+   ACTIVE / INACTIVE
+========================= */
+
+async function toggleExam(id,status){
+
+const text =
+status
+? "Active"
+: "Inactive";
+
+const confirmText =
+status
+? "এই Exam Active করবেন?"
+: "এই Exam Inactive করবেন?";
+
+if(!confirm(confirmText)){
+return;
+}
+
+const {error} =
+await db
+.from("exams")
+.update({
+is_active:status
+})
+.eq("id",id);
+
+if(error){
+
+alert(
+"Status পরিবর্তন করা যায়নি:\n"+
+error.message
+);
+
+return;
+}
+
+loadExams();
+
+}
+
+
+/* =========================
+   DELETE EXAM
+========================= */
+
+async function deleteExam(id){
+
+const ok =
+confirm(
+"⚠️ এই Exam Delete করতে চান?\n\n"+
+"সতর্কতা: Exam-এর সাথে সম্পর্কিত প্রশ্ন বা ফলাফল থাকলে Delete করা নাও যেতে পারে।"
+);
+
+if(!ok){
+return;
+}
+
+const {error} =
+await db
+.from("exams")
+.delete()
+.eq("id",id);
+
+if(error){
+
+alert(
+"Exam Delete করা যায়নি:\n"+
+error.message
+);
+
+return;
+}
+
+alert(
+"✅ Exam Delete হয়েছে।"
+);
+
+loadExams();
+
+}
+
+
+/* =========================
+   LOAD RESULTS
+========================= */
+
+async function loadResults(){
+
+const status =
+document.getElementById("status");
+
+status.className="status";
+
+status.textContent=
+"ফলাফল লোড হচ্ছে...";
+
+const {data,error} =
+await db
+.from("exam_attempts")
+.select(`
+id,
+score,
+total_questions,
+submitted_at,
+exams(title),
+students(
+name,
+facebook_name,
+district,
+mobile
+)
+`)
+.order(
+"submitted_at",
+{ascending:false}
+);
+
+if(error){
+
+status.className="status error";
+
+status.textContent=
+"ফলাফল লোড করতে সমস্যা: "+
+error.message;
+
+return;
+}
+
+const body =
+document.getElementById("results");
+
+body.innerHTML="";
+
+if(!data || data.length===0){
+
+body.innerHTML=`
+<tr>
+<td colspan="8" style="text-align:center">
+এখনো কোনো পরীক্ষা দেওয়া হয়নি।
+</td>
+</tr>
+`;
+
+document
+.getElementById("attempts")
+.textContent="0";
+
+document
+.getElementById("students")
+.textContent="0";
+
+status.className="status success";
+
+status.textContent=
+"Exam ও Admin Panel প্রস্তুত। এখনো কোনো Result নেই।";
+
+return;
+}
+
+let totalPercent=0;
+
+const unique=new Set();
+
+data.forEach(row=>{
+
+const s =
+row.students || {};
+
+const exam =
+row.exams || {};
+
+const score =
+Number(row.score || 0);
+
+const total =
+Number(row.total_questions || 0);
+
+const percent =
+total
+? Math.round(score/total*100)
+: 0;
+
+totalPercent += percent;
+
+if(s.mobile){
+unique.add(s.mobile);
+}
+
+const time =
+row.submitted_at
+? new Date(row.submitted_at)
+.toLocaleString(
+"bn-BD",
+{timeZone:"Asia/Dhaka"}
+)
+: "-";
+
+body.innerHTML += `
+
+<tr>
+
+<td>${safe(s.name)}</td>
+
+<td>${safe(s.facebook_name)}</td>
+
+<td>${safe(s.district)}</td>
+
+<td>${safe(s.mobile)}</td>
+
+<td>${safe(exam.title)}</td>
+
+<td>${score} / ${total}</td>
+
+<td>${percent}%</td>
+
+<td>${time}</td>
+
+</tr>
+
+`;
+
+});
+
+document
+.getElementById("attempts")
+.textContent=
+data.length;
+
+document
+.getElementById("students")
+.textContent=
+unique.size;
+
+status.className="status success";
+
+status.textContent=
+"✅ Exam ও ফলাফল সফলভাবে লোড হয়েছে।";
+
+}
+
+
+/* =========================
+   SECURITY
+========================= */
+
+function safe(value){
+
+return String(value || "-")
+
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================
+   SESSION CHECK
+========================= */
+
+async function checkSession(){
+
+const {data} =
+await db.auth.getSession();
+
+if(data.session){
+
+showPanel(
+data.session.user
+);
+
+}
+
+}
+
+checkSession();
+
+</script>
+
+</body>
+  </html>
