@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCQ Exam Admin</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  margin:0;
+  color:#222;
+}
+.wrap{
+  max-width:1100px;
+  margin:auto;
+  padding:16px;
+}
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:12px 0;
+  box-shadow:0 2px 8px #0001;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+}
+input,select,button,textarea{
+  width:100%;
+  box-sizing:border-box;
+  padding:10px;
+  margin:5px 0;
+  border:1px solid #ccd3da;
+  border-radius:7px;
+  font-size:15px;
+}
+button{
+  cursor:pointer;
+  background:#1769aa;
+  color:#fff;
+  border:0;
+  font-weight:bold;
+}
+button.danger{background:#c62828}
+button.gray{background:#607d8b}
+.hidden{display:none}
+.msg{
+  padding:9px;
+  border-radius:7px;
+  margin:8px 0;
+  background:#eef3f7;
+}
+.success{
+  background:#e8f5e9;
+  color:#1b5e20;
+}
+.error{
+  background:#ffebee;
+  color:#b71c1c;
+}
+.actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.actions button{width:auto}
+.small{
+  font-size:13px;
+  color:#667;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  font-size:14px;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:left;
+  vertical-align:top;
+}
+th{background:#eef3f7}
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0008;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+}
+.modal>div{
+  background:#fff;
+  padding:18px;
+  border-radius:12px;
+  width:min(650px,100%);
+  max-height:90vh;
+  overflow:auto;
+}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div id="loginBox" class="card">
+<h1>MCQ Exam Admin</h1>
+<p class="small">Supabase Admin Login</p>
+
+<input id="email" type="email" placeholder="Admin Email">
+
+<input id="password"
+       type="password"
+       placeholder="Password">
+
+<button id="loginButton">Login</button>
+
+<div id="loginStatus" class="msg"></div>
+<div id="panel" class="hidden">
+
+<div class="card">
+  <div class="actions">
+    <h2 style="margin-right:auto">Admin Panel</h2>
+    <button id="logoutButton" class="gray">Logout</button>
+  </div>
+  <div id="adminEmail" class="small"></div>
+</div>
+
+<div class="grid">
+
+<div class="card">
+  <b>Exams</b>
+  <h2 id="examCount">0</h2>
+</div>
+
+<div class="card">
+  <b>Questions</b>
+  <h2 id="questionCount">0</h2>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Exam Management</h2>
+
+<div class="grid">
+
+<input
+  id="examTitle"
+  placeholder="Exam-এর নাম">
+
+<button id="createExamButton">
+  Create Exam
+</button>
+
+<button id="refreshExamsButton" class="gray">
+  Refresh Exams
+</button>
+
+</div>
+
+<div id="examStatus" class="msg"></div>
+
+<div style="overflow:auto">
+
+<table>
+
+<thead>
+<tr>
+<th>Title</th>
+<th>Status</th>
+<th>Date</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="examTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+<div class="card">
+
+<h2>Exam Settings</h2>
+
+<select id="settingsExam">
+<option value="">Exam নির্বাচন করুন</option>
+</select>
+
+<div class="grid">
+
+<input id="totalMarks"
+type="number"
+placeholder="Total Marks">
+
+<input id="passMark"
+type="number"
+placeholder="Pass Mark">
+
+<input id="duration"
+type="number"
+placeholder="Duration (minutes)">
+
+<input id="marksPerQuestion"
+type="number"
+step="0.01"
+placeholder="Marks / Question">
+
+<input id="negativeMark"
+type="number"
+step="0.01"
+placeholder="Negative Mark">
+
+<input id="examDate"
+type="date">
+
+<input id="startTime"
+type="time">
+
+<input id="endTime"
+type="time">
+
+</div>
+
+<label>
+<input id="showAnswers" type="checkbox">
+Show Answers
+</label>
+
+<label>
+<input id="randomQuestions" type="checkbox">
+Random Questions
+</label>
+
+<label>
+<input id="randomOptions" type="checkbox">
+Random Options
+</label>
+
+<button id="saveSettingsButton">
+Save Settings
+</button>
+
+<div id="settingsStatus" class="msg"></div>
+
+</div>
+<div class="card">
+
+<h2>Manual Question Entry</h2>
+
+<div class="grid">
+
+<select id="manualCategory">
+<option value="">Category</option>
+</select>
+
+<select id="manualExam">
+<option value="">Exam</option>
+</select>
+
+</div>
+
+<textarea
+id="question"
+rows="3"
+placeholder="Question"></textarea>
+
+<div class="grid">
+
+<input id="optionA" placeholder="Option A">
+
+<input id="optionB" placeholder="Option B">
+
+<input id="optionC" placeholder="Option C">
+
+<input id="optionD" placeholder="Option D">
+
+</div>
+
+<select id="correctAnswer">
+
+<option value="">
+Correct Answer
+</option>
+
+<option value="A">A</option>
+<option value="B">B</option>
+<option value="C">C</option>
+<option value="D">D</option>
+
+</select>
+
+<button id="saveQuestionButton">
+Save Question
+</button>
+
+<div id="questionStatus" class="msg"></div>
+
+</div>
+<div class="card">
+
+<h2>Bulk Upload</h2>
+
+<p class="small">
+Excel/CSV columns:
+Category, Question, Option A, Option B,
+Option C, Option D, Correct Answer, Exam
+</p>
+
+<input
+id="fileInput"
+type="file"
+accept=".xlsx,.xls,.csv">
+
+<div class="actions">
+
+<button id="previewButton">
+Preview
+</button>
+
+<button id="confirmUploadButton">
+Upload
+</button>
+
+</div>
+
+<div id="uploadStatus" class="msg"></div>
+
+<div style="overflow:auto">
+
+<table>
+
+<thead id="previewHead"></thead>
+
+<tbody id="previewBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+<div class="card">
+
+<h2>Question Bank</h2>
+
+<div class="grid">
+
+<select id="filterCategory">
+<option value="">All Categories</option>
+</select>
+
+<select id="filterExam">
+<option value="">All Exams</option>
+</select>
+
+<input
+id="questionSearch"
+placeholder="Search question">
+
+</div>
+
+<button
+id="refreshQuestionsButton"
+class="gray">
+Refresh Questions
+</button>
+
+<div style="overflow:auto">
+
+<table>
+
+<thead>
+<tr>
+<th>Category</th>
+<th>Exam</th>
+<th>Question</th>
+<th>Correct</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody id="questionTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+<div class="card">
+
+<h2>Results</h2>
+
+<button
+id="refreshResultsButton"
+class="gray">
+Refresh Results
+</button>
+
+<div style="overflow:auto">
+
+<table>
+
+<thead>
+<tr>
+<th>Student</th>
+<th>Facebook</th>
+<th>District</th>
+<th>Mobile</th>
+<th>Exam</th>
+<th>Score</th>
+<th>%</th>
+<th>Submitted</th>
+</tr>
+</thead>
+
+<tbody id="resultTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+<div id="editModal" class="modal hidden">
+
+<div>
+
+<h2>Edit Question</h2>
+
+<input id="editId" type="hidden">
+
+<select id="editCategory"></select>
+
+<select id="editExam"></select>
+
+<textarea
+id="editQuestion"
+rows="3"
+placeholder="Question"></textarea>
+
+<div class="grid">
+
+<input id="editA" placeholder="Option A">
+<input id="editB" placeholder="Option B">
+<input id="editC" placeholder="Option C">
+<input id="editD" placeholder="Option D">
+
+</div>
+
+<select id="editCorrect">
+<option value="A">A</option>
+<option value="B">B</option>
+<option value="C">C</option>
+<option value="D">D</option>
+</select>
+
+<div class="actions">
+
+<button id="updateQuestionButton">
+Update
+</button>
+
+<button id="closeEditButton" class="gray">
+Close
+</button>
+
+</div>
+
+</div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<script>
+
+const SUPABASE_URL =
+"https://ydvbnalhcnfqpxkkmywr.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_xCbSWDkASsbUPl-WmygyMw_eVrJY_9a";
+
+const db =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+const CATEGORIES = [
+"বাংলা সাহিত্য",
+"বাংলা ব্যাকরণ",
+"গণিত",
+"ইংরেজি",
+"বাংলাদেশ",
+"আন্তর্জাতিক",
+"বিজ্ঞান",
+"কম্পিউটার ও তথ্যপ্রযুক্তি",
+"সাম্প্রতিক প্রশ্নোত্তর",
+"ভূগোল"
+];
+
+let exams = [];
+let questions = [];
+let uploadRows = [];
+let currentUser = null;
+
+const $ = id =>
+document.getElementById(id);
+
+function safe(value){
+return String(value ?? "")
+.replace(/[&<>"']/g, m => ({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#039;"
+}[m]));
+}
+
+function msg(id,text,type=""){
+const e = $(id);
+e.textContent = text;
+e.className = "msg " + type;
+
+}
+function initCategories(){
+
+const selects = [
+"manualCategory",
+"filterCategory",
+"editCategory"
+];
+
+selects.forEach(id => {
+
+const e = $(id);
+if(!e) return;
+
+e.innerHTML =
+'<option value="">Category নির্বাচন করুন</option>';
+
+CATEGORIES.forEach(c => {
+
+const o = document.createElement("option");
+o.value = c;
+o.textContent = c;
+
+e.appendChild(o);
+
+});
+
+});
+
+}
+
+function populateExamSelects(){
+
+const selects = [
+"manualExam",
+"filterExam",
+"settingsExam",
+"editExam"
+];
+
+selects.forEach(id => {
+
+const e = $(id);
+if(!e) return;
+
+e.innerHTML =
+'<option value="">Exam নির্বাচন করুন</option>';
+
+exams.forEach(exam => {
+
+const o = document.createElement("option");
+
+o.value = exam.id;
+o.textContent = exam.title;
+
+e.appendChild(o);
+
+});
+async function checkSession(){
+
+const {data} = await db.auth.getSession();
+
+if(data.session){
+
+currentUser = data.session.user;
+
+$("loginBox").classList.add("hidden");
+$("panel").classList.remove("hidden");
+
+$("adminEmail").textContent =
+currentUser.email || "";
+
+await loadExams();
+
+}else{
+
+$("loginBox").classList.remove("hidden");
+$("panel").classList.add("hidden");
+
+}
+
+}
+
+async function login(){
+
+const email = $("email").value.trim();
+const password = $("password").value;
+
+if(!email || !password){
+
+msg("loginStatus","Email ও Password দিন","error");
+return;
+
+}
+
+msg("loginStatus","Login হচ্ছে...");
+
+const {data,error} =
+await db.auth.signInWithPassword({
+email,
+password
+});
+
+if(error){
+
+msg("loginStatus",error.message,"error");
+return;
+
+}
+
+currentUser = data.user;
+
+msg("loginStatus","Login সফল হয়েছে","success");
+
+await checkSession();
+
+}
+
+async function logout(){
+
+await db.auth.signOut();
+
+currentUser = null;
+
+$("panel").classList.add("hidden");
+$("loginBox").classList.remove("hidden");
+
+}
+
+$("loginButton").addEventListener(
+"click",login
+);
+
+$("logoutButton").addEventListener(
+"click",logout
+);
+
+checkSession();
+
+
+});
+}
+async function loadExams(){
+
+const {data,error} =
+await db
+.from("exams")
+.select("*")
+.order("exam_date",{ascending:false});
+
+if(error){
+
+msg("examStatus",error.message,"error");
+return;
+
+}
+
+exams = data || [];
+
+$("examCount").textContent =
+exams.length;
+
+populateExamSelects();
+
+renderExams();
+
+}
+
+function renderExams(){
+
+$("examTable").innerHTML =
+exams.map(x => `
+
+<tr>
+
+<td>${safe(x.title)}</td>
+
+<td>
+${x.is_active ? "Active" : "Inactive"}
+</td>
+
+<td>${safe(x.exam_date || "")}</td>
+
+<td>
+
+<div class="actions">
+
+<button
+onclick="toggleExam('${x.id}')">
+${x.is_active ? "Deactivate" : "Activate"}
+</button>
+
+<button
+class="danger"
+onclick="deleteExam('${x.id}')">
+Delete
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`).join("");
+
+}
+
+async function createExam(){
+
+const title =
+$("examTitle").value.trim();
+
+if(!title){
+
+msg(
+"examStatus",
+"Exam-এর নাম দিন",
+"error"
+);
+
+return;
+
+}
+
+const {error} =
+await db
+.from("exams")
+.insert({
+title:title,
+is_active:true
+});
+
+if(error){
+
+msg(
+"examStatus",
+error.message,
+"error"
+);
+
+return;
+
+}
+
+$("examTitle").value = "";
+
+msg(
+"examStatus",
+"Exam তৈরি হয়েছে",
+"success"
+);
+
+await loadExams();
+
+}
+async function toggleExam(id){
+
+const exam =
+exams.find(x => x.id === id);
+
+if(!exam) return;
+
+const {error} =
+await db
+.from("exams")
+.update({
+is_active:!exam.is_active
+})
+.eq("id",id);
+
+if(error){
+
+msg(
+"examStatus",
+error.message,
+"error"
+);
+
+return;
+
+}
+
+msg(
+"examStatus",
+"Exam status পরিবর্তন হয়েছে",
+"success"
+);
+
+await loadExams();
+
+}
+
+async function deleteExam(id){
+
+if(!confirm("এই Exam মুছে ফেলবেন?")){
+return;
+}
+
+const {error} =
+await db
+.from("exams")
+.delete()
+.eq("id",id);
+
+if(error){
+
+msg(
+"examStatus",
+error.message,
+"error"
+);
+
+return;
+
+}
+
+msg(
+"examStatus",
+"Exam মুছে ফেলা হয়েছে",
+"success"
+);
+
+await loadExams();
+
+}
+async function saveSettings(){
+
+const id =
+$("settingsExam").value;
+
+if(!id){
+
+msg(
+"settingsStatus",
+"Exam নির্বাচন করুন",
+"error"
+);
+
+return;
+
+}
+
+const updates = {
+
+total_marks:
+Number($("totalMarks").value) || 0,
+
+pass_mark:
+Number($("passMark").value) || 0,
+
+duration_minutes:
+Number($("duration").value) || 0,
+
+marks_per_question:
+Number($("marksPerQuestion").value) || 0,
+
+negative_mark:
+Number($("negativeMark").value) || 0,
+
+exam_date:
+$("examDate").value || null,
+
+start_time:
+$("startTime").value || null,
+
+end_time:
+$("endTime").value || null,
+
+show_answers:
+$("showAnswers").checked,
+
+random_questions:
+$("randomQuestions").checked,
+
+random_options:
+$("randomOptions").checked
+
+};
+
+const {error} =
+await db
+.from("exams")
+.update(updates)
+.eq("id",id);
+
+if(error){
+
+msg(
+"settingsStatus",
+error.message,
+"error"
+);
+
+return;
+
+}
+
+msg(
+"settingsStatus",
+"Settings সংরক্ষণ হয়েছে",
+"success"
+);
+
+await loadExams();
+
+}
+async function saveQuestion(){
+
+const category =
+$("manualCategory").value;
+
+const exam_id =
+$("manualExam").value;
+
+const question =
+$("question").value.trim();
+
+const option_a =
+$("optionA").value.trim();
+
+const option_b =
+$("optionB").value.trim();
+
+const option_c =
+$("optionC").value.trim();
+
+const option_d =
+$("optionD").value.trim();
+
+const correct_answer =
+$("correctAnswer").value;
+
+if(
+!category ||
+!exam_id ||
+!question ||
+!option_a ||
+!option_b ||
+!option_c ||
+!option_d ||
+!correct_answer
+){
+
+msg(
+"questionStatus",
+"সব তথ্য পূরণ করুন",
+"error"
+);
+
+return;
+
+}
+
+const {error} =
+await db
+.from("questions")
+.insert({
+category,
+exam_id,
+question,
+option_a,
+option_b,
+option_c,
+option_d,
+correct_answer
+});
+
+if(error){
+
+msg(
+"questionStatus",
+error.message,
+"error"
+);
+
+return;
+
+}
+
+msg(
+"questionStatus",
+"Question সংরক্ষণ হয়েছে",
+"success"
+);
+
+$("question").value="";
+$("optionA").value="";
+$("optionB").value="";
+$("optionC").value="";
+$("optionD").value="";
+$("correctAnswer").value="";
+
+await loadQuestions();
+
+}
+async function loadQuestions(){
+
+const {data,error} =
+await db
+.from("questions")
+.select("*, exams(title)")
+.order("question_order",{ascending:true});
+
+if(error){
+
+msg(
+"questionStatus",
+error.message,
+"error"
+);
+
+return;
+
+}
+
+questions = data || [];
+
+$("questionCount").textContent =
+questions.length;
+
+renderQuestions();
+
+}
+
+function renderQuestions(){
+
+const category =
+$("filterCategory").value;
+
+const exam =
+$("filterExam").value;
+
+const search =
+$("questionSearch").value
+.trim()
+.toLowerCase();
+
+const filtered =
+questions.filter(q => {
+
+if(category &&
+q.category !== category)
+return false;
+
+if(exam &&
+q.exam_id !== exam)
+return false;
+
+if(search &&
+!String(q.question)
+.toLowerCase()
+.includes(search))
+return false;
+
+return true;
+
+});
+
+$("questionTable").innerHTML =
+filtered.map(q => `
+
+<tr>
+
+<td>${safe(q.category)}</td>
+
+<td>${safe(q.exams?.title || "")}</td>
+
+<td>${safe(q.question)}</td>
+
+<td>${safe(q.correct_answer)}</td>
+
+<td>
+
+<div class="actions">
+
+<button
+onclick="openEdit('${q.id}')">
+Edit
+</button>
+
+<button
+class="danger"
+onclick="deleteQuestion('${q.id}')">
+Delete
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`).join("");
+
+}
+function openEdit(id){
+
+const q =
+questions.find(x => x.id === id);
+
+if(!q) return;
+
+$("editId").value = q.id;
+
+$("editCategory").value =
+q.category || "";
+
+$("editExam").value =
+q.exam_id || "";
+
+$("editQuestion").value =
+q.question || "";
+
+$("editA").value =
+q.option_a || "";
+
+$("editB").value =
+q.option_b || "";
+
+$("editC").value =
+q.option_c || "";
+
+$("editD").value =
+q.option_d || "";
+
+$("editCorrect").value =
+q.correct_answer || "A";
+
+$("editModal")
+.classList.remove("hidden");
+
+}
+
+async function updateQuestion(){
+
+const id =
+$("editId").value;
+
+const updates = {
+
+category:$("editCategory").value,
+
+exam_id:$("editExam").value,
+
+question:$("editQuestion").value.trim(),
+
+option_a:$("editA").value.trim(),
+
+option_b:$("editB").value.trim(),
+
+option_c:$("editC").value.trim(),
+
+option_d:$("editD").value.trim(),
+
+correct_answer:$("editCorrect").value
+
+};
+
+const {error} =
+await db
+.from("questions")
+.update(updates)
+.eq("id",id);
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+$("editModal")
+.classList.add("hidden");
+
+await loadQuestions();
+
+}
+async function deleteQuestion(id){
+
+if(!confirm("এই প্রশ্নটি মুছে ফেলবেন?")){
+return;
+}
+
+const {error} =
+await db
+.from("questions")
+.delete()
+.eq("id",id);
+
+if(error){
+
+alert(error.message);
+return;
+
+}
+
+await loadQuestions();
+
+}
+
+async function loadResults(){
+
+const {data,error} =
+await db
+.from("exam_attempts")
+.select(`
+id,
+score,
+total_questions,
+submitted_at,
+exams(title),
+students(
+name,
+facebook_name,
+district,
+mobile
+)
+`)
+.order(
+"submitted_at",
+{ascending:false}
+);
+
+if(error){
+
+console.error(error);
+return;
+
+}
+
+$("resultTable").innerHTML =
+(data || []).map(r => {
+
+const student =
+r.students || {};
+
+const percent =
+r.total_questions
+? (
+Number(r.score || 0) /
+Number(r.total_questions)
+* 100
+).toFixed(2)
+: "0.00";
+
+return `
+
+<tr>
+
+<td>${safe(student.name)}</td>
+
+<td>${safe(student.facebook_name)}</td>
+
+<td>${safe(student.district)}</td>
+
+<td>${safe(student.mobile)}</td>
+
+<td>${safe(r.exams?.title || "")}</td>
+
+<td>${safe(r.score)}</td>
+
+<td>${percent}%</td>
+
+<td>${safe(r.submitted_at)}</td>
+
+</tr>
+
+`;
+
+}).join("");
+
+}
+
+async function previewFile(){
+
+const file =
+$("fileInput").files[0];
+
+if(!file){
+
+msg(
+"uploadStatus",
+"Excel বা CSV ফাইল নির্বাচন করুন",
+"error"
+);
+
+return;
+
+}
+
+const buffer =
+await file.arrayBuffer();
+
+const workbook =
+XLSX.read(buffer,{type:"array"});
+
+const sheet =
+workbook.Sheets[
+workbook.SheetNames[0]
+];
+
+uploadRows =
+XLSX.utils.sheet_to_json(
+sheet,
+{defval:""}
+);
+
+if(!uploadRows.length){
+
+msg(
+"uploadStatus",
+"ফাইলে কোনো তথ্য পাওয়া যায়নি",
+"error"
+);
+
+return;
+
+}
+
+const headers =
+Object.keys(uploadRows[0]);
+
+$("previewHead").innerHTML =
+"<tr>" +
+headers.map(h =>
+`<th>${safe(h)}</th>`
+).join("") +
+"</tr>";
+
+$("previewBody").innerHTML =
+uploadRows
+.slice(0,50)
+.map(row =>
+"<tr>" +
+headers.map(h =>
+`<td>${safe(row[h])}</td>`
+).join("") +
+"</tr>"
+)
+.join("");
+
+msg(
+"uploadStatus",
+`${uploadRows.length}টি প্রশ্ন পাওয়া গেছে`,
+"success"
+);
+
+}
+
+async function confirmUpload(){
+
+if(!uploadRows.length){
+
+msg(
+"uploadStatus",
+"আগে Preview করুন",
+"error"
+);
+
+return;
+
+}
+
+msg(
+"uploadStatus",
+"Upload হচ্ছে..."
+);
+
+for(const row of uploadRows){
+
+const title =
+String(row["Exam"] || "")
+.trim();
+
+const exam =
+exams.find(e =>
+String(e.title)
+.toLowerCase() ===
+title.toLowerCase()
+);
+
+if(!exam) continue;
+
+await db
+.from("questions")
+.insert({
+
+category:
+String(row["Category"] || "").trim(),
+
+question:
+String(row["Question"] || "").trim(),
+
+option_a:
+String(row["Option A"] || "").trim(),
+
+option_b:
+String(row["Option B"] || "").trim(),
+
+option_c:
+String(row["Option C"] || "").trim(),
+
+option_d:
+String(row["Option D"] || "").trim(),
+
+correct_answer:
+String(row["Correct Answer"] || "")
+.trim()
+.toUpperCase(),
+
+exam_id:exam.id
+
+});
+
+}
+
+msg(
+"uploadStatus",
+"Bulk Upload সম্পন্ন হয়েছে",
+"success"
+);
+
+uploadRows = [];
+
+await loadQuestions();
+
+}
+$("createExamButton")
+.addEventListener(
+"click",
+createExam
+);
+
+$("refreshExamsButton")
+.addEventListener(
+"click",
+loadExams
+);
+
+$("saveSettingsButton")
+.addEventListener(
+"click",
+saveSettings
+);
+
+$("saveQuestionButton")
+.addEventListener(
+"click",
+saveQuestion
+);
+
+$("previewButton")
+.addEventListener(
+"click",
+previewFile
+);
+
+$("confirmUploadButton")
+.addEventListener(
+"click",
+confirmUpload
+);
+
+$("refreshQuestionsButton")
+.addEventListener(
+"click",
+loadQuestions
+);
+
+$("refreshResultsButton")
+.addEventListener(
+"click",
+loadResults
+);
+
+$("updateQuestionButton")
+.addEventListener(
+"click",
+updateQuestion
+);
+
+$("closeEditButton")
+.addEventListener(
+"click",
+() => {
+$("editModal")
+.classList.add("hidden");
+}
+);
+
+$("filterCategory")
+.addEventListener(
+"change",
+renderQuestions
+);
+
+$("filterExam")
+.addEventListener(
+"change",
+renderQuestions
+);
+
+$("questionSearch")
+.addEventListener(
+"input",
+renderQuestions
+);
+
+$("settingsExam")
+.addEventListener(
+"change",
+() => {
+
+const id =
+$("settingsExam").value;
+
+const exam =
+exams.find(x => x.id === id);
+
+if(!exam) return;
+
+$("totalMarks").value =
+exam.total_marks || "";
+
+$("passMark").value =
+exam.pass_mark || "";
+
+$("duration").value =
+exam.duration_minutes || "";
+
+$("marksPerQuestion").value =
+exam.marks_per_question || "";
+
+$("negativeMark").value =
+exam.negative_mark || "";
+
+$("examDate").value =
+exam.exam_date || "";
+
+$("startTime").value =
+exam.start_time || "";
+
+$("endTime").value =
+exam.end_time || "";
+
+$("showAnswers").checked =
+!!exam.show_answers;
+
+$("randomQuestions").checked =
+!!exam.random_questions;
+
+$("randomOptions").checked =
+!!exam.random_options;
+initCategories();
+
+checkSession();
+
+</script>
+
+</body>
+</html>
+
+}
+);
