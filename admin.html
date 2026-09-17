@@ -200,9 +200,14 @@ const msg=(id,t,c="")=>{$(id).textContent=t;$(id).className="msg "+c};
 const answerBn=v=>({A:"ক",B:"খ",C:"গ",D:"ঘ"})[v]||v;
 
 function normCat(v){ return String(v??"").replace(/\u00a0/g," ").trim().replace(/\s+/g," "); }
+function canonicalCat(v){
+ const c=normCat(v);
+ const aliases={"ব্যাকরণ":"বাংলা ব্যাকরণ","বাংলা ব্যাকরণ":"বাংলা ব্যাকরণ","বাংলাদেশ বিষয়াবলি":"বাংলাদেশ","বাংলাদেশ বিষয়াবলি":"বাংলাদেশ","আন্তর্জাতিক বিষয়াবলি":"আন্তর্জাতিক","আন্তর্জাতিক বিষয়াবলি":"আন্তর্জাতিক","সাধারণ বিজ্ঞান":"বিজ্ঞান","বিজ্ঞান":"বিজ্ঞান","গণিত":"গণিত","ইংরেজি":"ইংরেজি","বাংলা সাহিত্য":"বাংলা সাহিত্য","কম্পিউটার ও তথ্যপ্রযুক্তি":"কম্পিউটার ও তথ্যপ্রযুক্তি","সাম্প্রতিক প্রশ্নোত্তর":"সাম্প্রতিক প্রশ্নোত্তর","ভূগোল":"ভূগোল"};
+ return aliases[c] || c;
+}
 function fillCategory(id,all=true){
  const e=$(id); if(!e)return;
- const actual=[...new Set(questions.map(q=>normCat(q.category)).filter(Boolean))];
+ const actual=[...new Set(questions.map(q=>canonicalCat(q.category)).filter(Boolean))];
  const list=[...CATEGORIES,...actual.filter(c=>!CATEGORIES.includes(c))];
  e.innerHTML=(all?'<option value="">সব Category</option>':'<option value="">Category নির্বাচন করুন</option>')+list.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join("");
 }
@@ -279,10 +284,10 @@ $("saveQuestionBtn").onclick=async()=>{
 };
 
 function renderBank(){
- const ex=$("bankExam").value,cat=normCat($("bankCategory").value),s=$("bankSearch").value.trim().toLowerCase();
- const f=questions.filter(q=>(!ex||String(q.exam_id)===String(ex))&&(!cat||normCat(q.category)===cat)&&(!s||String(q.question_text||"").toLowerCase().includes(s)));
+ const ex=$("bankExam").value,cat=canonicalCat($("bankCategory").value),s=$("bankSearch").value.trim().toLowerCase();
+ const f=questions.filter(q=>(!ex||String(q.exam_id)===String(ex))&&(!cat||canonicalCat(q.category)===cat)&&(!s||String(q.question_text||"").toLowerCase().includes(s)));
  $("bankInfo").textContent=`মোট ${bn(f.length)}টি প্রশ্ন পাওয়া গেছে।`;
- $("bankTable").innerHTML=f.map((q,i)=>`<tr><td>${bn(i+1)}</td><td>${safe(q.category)}</td><td>${safe(q.exams?.title||"")}</td><td>${safe(q.question_text)}</td><td>${answerBn(q.correct_option)}</td><td><div class="actions"><button onclick="openEdit('${q.id}')">Edit</button><button class="danger" onclick="deleteQuestion('${q.id}')">Delete</button></div></td></tr>`).join("");
+ $("bankTable").innerHTML=f.map((q,i)=>`<tr><td>${bn(i+1)}</td><td>${safe(canonicalCat(q.category))}</td><td>${safe(q.exams?.title||"")}</td><td>${safe(q.question_text)}</td><td>${answerBn(q.correct_option)}</td><td><div class="actions"><button onclick="openEdit('${q.id}')">Edit</button><button class="danger" onclick="deleteQuestion('${q.id}')">Delete</button></div></td></tr>`).join("");
 }
 $("bankExam").onchange=renderBank;$("bankCategory").onchange=renderBank;$("bankSearch").oninput=renderBank;
 
@@ -336,7 +341,7 @@ $("uploadBtn").onclick=async()=>{
  const bad=uploadRows.find(r=>!r.category||!r.option_a||!r.option_b||!r.option_c||!r.option_d||!["A","B","C","D"].includes(r.correct_option));
  if(bad){msg("uploadMsg","Excel-এর Category/Options/Correct Answer পরীক্ষা করুন।","error");return}
  const base=questions.filter(q=>String(q.exam_id)===String(examId)).length;
- const rows=uploadRows.map((r,i)=>({exam_id:examId,category:r.category,question_text:r.question_text,option_a:r.option_a,option_b:r.option_b,option_c:r.option_c,option_d:r.option_d,correct_option:r.correct_option,question_order:base+i+1}));
+ const rows=uploadRows.map((r,i)=>({exam_id:examId,category:canonicalCat(r.category),question_text:r.question_text,option_a:r.option_a,option_b:r.option_b,option_c:r.option_c,option_d:r.option_d,correct_option:r.correct_option,question_order:base+i+1}));
  const {error}=await db.from("questions").insert(rows);if(error)msg("uploadMsg","Upload ব্যর্থ: "+error.message,"error");else{msg("uploadMsg",`${bn(rows.length)}টি প্রশ্ন সফলভাবে যোগ হয়েছে।`,"success");uploadRows=[];await loadQuestions()}
 };
 
