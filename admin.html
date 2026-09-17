@@ -87,17 +87,29 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
     <section id="view-settings" class="view">
       <div class="card">
         <h2>⚙️ Exam Settings</h2>
-        <p class="small">বর্তমান ডাটাবেসে সংরক্ষিত Duration ব্যবহার করা হবে। Category distribution নিচে প্রশ্ন ব্যাংকের তথ্য দেখে নির্ধারণ করা যাবে।</p>
+        <p class="small">প্রতিটি Exam-এর আলাদা marks, negative marking, time, date এবং question distribution সংরক্ষণ করুন।</p>
         <select id="settingsExam"></select>
         <div class="grid">
+          <input id="totalQuestions" type="number" min="1" placeholder="Total Questions">
+          <input id="totalMarks" type="number" step="0.01" min="0" placeholder="Total Marks">
+          <input id="passMark" type="number" step="0.01" min="0" placeholder="Pass Mark">
           <input id="duration" type="number" min="1" placeholder="Duration (minutes)">
+          <input id="marksPerQuestion" type="number" step="0.01" min="0" placeholder="Marks / Question">
+          <input id="negativeMark" type="number" step="0.01" min="0" placeholder="Negative Mark">
+          <input id="examDate" type="date" title="Exam Date">
+          <input id="startTime" type="time" title="Start Time">
+          <input id="endTime" type="time" title="End Time">
         </div>
+        <label><input id="showAnswers" type="checkbox" style="width:auto"> Submit-এর পর Correct Answer দেখাবে</label>
+        <label><input id="randomQuestions" type="checkbox" style="width:auto"> Random Questions</label>
+        <label><input id="randomOptions" type="checkbox" style="width:auto"> Random Options</label>
         <button id="saveSettingsBtn">💾 Settings Save</button>
         <div id="settingsMsg" class="msg"></div>
-        <div class="card" style="background:#f8fafc">
-          <h3>Category-wise Question Count</h3>
-          <div id="distribution"></div>
-        </div>
+      </div>
+      <div class="card">
+        <h3>Category-wise Question Distribution</h3>
+        <div class="grid"><select id="distCategory"></select><input id="distCount" type="number" min="0" placeholder="Question Count"><button id="saveDistBtn">Add / Update</button></div>
+        <div class="tableWrap"><table><thead><tr><th>Category</th><th>Questions</th><th>Action</th></tr></thead><tbody id="distribution"></tbody></table></div>
       </div>
     </section>
 
@@ -153,7 +165,7 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
       <div class="card">
         <h2>📊 Results</h2>
         <div class="toolbar"><select id="resultExam"></select><input id="resultSearch" placeholder="নাম/মোবাইল দিয়ে খুঁজুন"></div>
-        <div class="tableWrap"><table><thead><tr><th>Student</th><th>Facebook</th><th>District</th><th>Mobile</th><th>Exam</th><th>Score</th><th>%</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div>
+        <div class="tableWrap"><table><thead><tr><th>Student</th><th>Facebook</th><th>District</th><th>Mobile</th><th>Exam</th><th>Score</th><th>%</th><th>Rank</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div>
       </div>
     </section>
 
@@ -162,11 +174,11 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
     </section>
 
     <section id="view-papers" class="view">
-      <div class="card"><h2>📄 Question Paper</h2><p class="small">Exam নির্বাচন করে browser print/save as PDF বা DOC-compatible HTML ফাইল তৈরি করা যাবে।</p><select id="paperExam"></select><button id="printPaperBtn">🖨️ Question Paper Print / PDF</button></div>
+      <div class="card"><h2>📄 Question Paper</h2><p class="small">Exam নির্বাচন করে browser print/save as PDF বা DOC-compatible HTML ফাইল তৈরি করা যাবে।</p><select id="paperExam"></select><div class="actions"><button id="printPaperBtn">🖨️ Print / PDF</button><button id="docxPaperBtn" class="light">⬇️ DOCX</button></div></div>
     </section>
 
     <section id="view-answers" class="view">
-      <div class="card"><h2>✅ Answer Paper</h2><p class="small">Exam নির্বাচন করে answer paper print/save as PDF করা যাবে।</p><select id="answerExam"></select><button id="printAnswerBtn">🖨️ Answer Paper Print / PDF</button></div>
+      <div class="card"><h2>✅ Answer Paper</h2><p class="small">Exam নির্বাচন করে answer paper print/save as PDF করা যাবে।</p><select id="answerExam"></select><div class="actions"><button id="printAnswerBtn">🖨️ Print / PDF</button><button id="docxAnswerBtn" class="light">⬇️ DOCX</button></div></div>
     </section>
   </div>
 </div>
@@ -184,7 +196,7 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 const SUPABASE_URL="https://ydvbnalhcnfqpxkkmywr.supabase.co";
@@ -216,6 +228,7 @@ function fillExam(id,allLabel="Exam নির্বাচন করুন"){
  e.innerHTML=`<option value="">${allLabel}</option>`+exams.map(x=>`<option value="${x.id}">${safe(x.title)}</option>`).join("");
 }
 function fillAllSelects(){
+ if($('distCategory')) $('distCategory').innerHTML="<option value="">Category নির্বাচন করুন</option>"+CATEGORIES.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join("");
  ["settingsExam","manualExam","bulkExam","editExam","paperExam","answerExam"].forEach(id=>fillExam(id));
  fillExam("bankExam","সব পরীক্ষা"); fillExam("resultExam","সব পরীক্ষা");
  fillCategory("manualCategory",false); fillCategory("editCategory",false); fillCategory("bankCategory",true);
@@ -244,7 +257,7 @@ async function loadExams(){
  const {data,error}=await db.from("exams").select("*").order("created_at",{ascending:false});
  if(error){msg("examMsg",error.message,"error");return} exams=data||[];$("examCount").textContent=exams.length;fillAllSelects();renderExams();renderLinks();
 }
-function examLink(id){return location.origin+location.pathname.replace(/admin\.html$/,"index.html")+"?exam="+encodeURIComponent(id)}
+function examLink(id){return new URL("index.html?exam="+encodeURIComponent(id), location.href).href}
 function renderExams(){
  $("examTable").innerHTML=exams.map(e=>`<tr><td><b>${safe(e.title)}</b></td><td>${safe(e.duration_minutes||20)} মিনিট</td><td><span class="badge ${e.is_active?"activeBadge":"closedBadge"}">${e.is_active?"Active":"Closed"}</span></td><td><button class="light" onclick="copyLink('${e.id}')">Copy</button></td><td><div class="actions"><button onclick="toggleExam('${e.id}')">${e.is_active?"Close":"Open"}</button><button class="danger" onclick="deleteExam('${e.id}')">Delete</button></div></td></tr>`).join("");
 }
@@ -258,12 +271,50 @@ async function deleteExam(id){if(!confirm("এই Exam এবং এর প্�
 async function copyLink(id){await navigator.clipboard.writeText(examLink(id));alert("Exam link copied")}
 
 async function loadSettings(){
- const id=$("settingsExam").value;if(!id){$("distribution").innerHTML="<div class='small'>Exam নির্বাচন করুন।</div>";return}
- const e=exams.find(x=>String(x.id)===String(id));$("duration").value=e?.duration_minutes||20;
- const counts={};questions.filter(q=>String(q.exam_id)===String(id)).forEach(q=>counts[q.category]=(counts[q.category]||0)+1);
- $("distribution").innerHTML=CATEGORIES.map(c=>`<div class="distRow"><div>${safe(c)}</div><input value="${counts[c]||0}" readonly></div>`).join("");
+ const id=$('settingsExam').value;
+ if(!id){$('distribution').innerHTML='';return}
+ const ex=exams.find(e=>String(e.id)===String(id));
+ let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
+ const s=r.data||{};
+ $('totalQuestions').value=s.total_questions??questions.filter(q=>String(q.exam_id)===String(id)).length;
+ $('totalMarks').value=s.total_marks??'';
+ $('passMark').value=s.pass_mark??'';
+ $('duration').value=s.duration_minutes??ex?.duration_minutes??20;
+ $('marksPerQuestion').value=s.marks_per_question??1;
+ $('negativeMark').value=s.negative_mark??0;
+ $('examDate').value=s.exam_date??'';
+ $('startTime').value=s.start_time??'';
+ $('endTime').value=s.end_time??'';
+ $('showAnswers').checked=!!s.show_answers;
+ $('randomQuestions').checked=!!s.random_questions;
+ $('randomOptions').checked=!!s.random_options;
+ renderDistribution();
+}
+async function renderDistribution(){
+ const id=$('settingsExam').value;if(!id)return;
+ const r=await db.from('exam_category_settings').select('*').eq('exam_id',id).order('category');
+ const rows=r.data||[];
+ $('distribution').innerHTML=rows.map(x=>`<tr><td>${safe(x.category)}</td><td>${bn(x.question_count)}</td><td><button class="danger" onclick="deleteDist('${safe(x.category)}')">Delete</button></td></tr>`).join('');
+}
+async function saveDistribution(){
+ const exam_id=$('settingsExam').value,category=$('distCategory').value,count=Number($('distCount').value);
+ if(!exam_id||!category||count<0){msg('settingsMsg','Exam, Category ও Question Count দিন','error');return}
+ const r=await db.from('exam_category_settings').upsert({exam_id,category,question_count:count},{onConflict:'exam_id,category'});
+ if(r.error)msg('settingsMsg',r.error.message,'error');else{msg('settingsMsg','Category distribution সংরক্ষণ হয়েছে','success');$('distCount').value='';renderDistribution()}
+}
+async function deleteDist(cat){const id=$('settingsExam').value;if(!id)return;const r=await db.from('exam_category_settings').delete().eq('exam_id',id).eq('category',cat);if(r.error)alert(r.error.message);else renderDistribution()}
+async function saveSettings(){
+ const id=$('settingsExam').value;if(!id){msg('settingsMsg','Exam নির্বাচন করুন','error');return}
+ const v={exam_id:id,total_questions:Number($('totalQuestions').value)||0,total_marks:Number($('totalMarks').value)||0,pass_mark:Number($('passMark').value)||0,duration_minutes:Number($('duration').value)||20,marks_per_question:Number($('marksPerQuestion').value)||1,negative_mark:Number($('negativeMark').value)||0,exam_date:$('examDate').value||null,start_time:$('startTime').value||null,end_time:$('endTime').value||null,show_answers:$('showAnswers').checked,random_questions:$('randomQuestions').checked,random_options:$('randomOptions').checked};
+ const r=await db.from('exam_settings').upsert(v,{onConflict:'exam_id'});
+ if(r.error){msg('settingsMsg',r.error.message,'error');return}
+ const e=await db.from('exams').update({duration_minutes:v.duration_minutes}).eq('id',id);
+ if(e.error){msg('settingsMsg',e.error.message,'error');return}
+ msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে','success');await loadExams();loadSettings();
 }
 $("settingsExam").onchange=loadSettings;
+$('saveDistBtn').onclick=saveDistribution;
+$('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option>${safe(c)}</option>`).join('');
 $("saveSettingsBtn").onclick=async()=>{
  const id=$("settingsExam").value;if(!id){msg("settingsMsg","Exam নির্বাচন করুন","error");return}
  const duration=Number($("duration").value)||20;const {error}=await db.from("exams").update({duration_minutes:duration}).eq("id",id);
@@ -303,13 +354,16 @@ $("updateBtn").onclick=async()=>{
 window.deleteQuestion=async id=>{if(!confirm("এই প্রশ্নটি মুছে ফেলবেন?"))return;const {error}=await db.from("questions").delete().eq("id",id);if(error)alert(error.message);else loadQuestions()};
 
 async function loadResults(){
- const {data,error}=await db.from("exam_attempts").select("id,score,total_questions,submitted_at,exams(title),students(name,facebook_name,district,mobile)").order("submitted_at",{ascending:false});
- if(error){console.error(error);return}results=data||[];$("resultCount").textContent=results.length;renderResults();
+ const {data,error}=await db.from('exam_attempts').select('id,exam_id,score,total_questions,submitted_at,attempt_date,exams(id,title),students(name,facebook_name,district,mobile)').order('submitted_at',{ascending:false});
+ if(error){console.error(error);return}results=data||[];$('resultCount').textContent=results.length;renderResults();
 }
 function renderResults(){
- const ex=$("resultExam").value,s=$("resultSearch").value.trim().toLowerCase();
- const f=results.filter(r=>(!ex||r.exams?.id===ex||String(r.exam_id)===String(ex))&&(!s||`${r.students?.name||""} ${r.students?.mobile||""}`.toLowerCase().includes(s)));
- $("resultTable").innerHTML=f.map(r=>{const pct=r.total_questions?((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2):"0.00";return `<tr><td>${safe(r.students?.name)}</td><td>${safe(r.students?.facebook_name)}</td><td>${safe(r.students?.district)}</td><td>${safe(r.students?.mobile)}</td><td>${safe(r.exams?.title)}</td><td>${safe(r.score)}</td><td>${pct}%</td><td>${safe(r.submitted_at)}</td></tr>`}).join("");
+ const ex=$('resultExam').value,s=$('resultSearch').value.trim().toLowerCase();
+ let f=results.filter(r=>(!ex||String(r.exam_id)===String(ex))&&(!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s)));
+ const groups={};f.forEach(r=>{const k=String(r.exam_id)+'|'+String(r.attempt_date||'');(groups[k]??=[]).push(r)});
+ Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)));
+ const rank=new Map();Object.values(groups).forEach(a=>{let prev=null,rankNo=0;a.forEach((r,i)=>{if(prev===null||Number(r.score)!==prev)rankNo=i+1;rank.set(r.id,rankNo);prev=Number(r.score)})});
+ $('resultTable').innerHTML=f.map(r=>{const pct=r.total_questions?((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2):'0.00';return `<tr><td>${safe(r.students?.name)}</td><td>${safe(r.students?.facebook_name)}</td><td>${safe(r.students?.district)}</td><td>${safe(r.students?.mobile)}</td><td>${safe(r.exams?.title)}</td><td>${safe(r.score)}</td><td>${pct}%</td><td>${bn(rank.get(r.id)||'')}</td><td>${safe(r.submitted_at)}</td></tr>`}).join('');
 }
 $("resultExam").onchange=renderResults;$("resultSearch").oninput=renderResults;
 
@@ -345,6 +399,14 @@ $("uploadBtn").onclick=async()=>{
  const {error}=await db.from("questions").insert(rows);if(error)msg("uploadMsg","Upload ব্যর্থ: "+error.message,"error");else{msg("uploadMsg",`${bn(rows.length)}টি প্রশ্ন সফলভাবে যোগ হয়েছে।`,"success");uploadRows=[];await loadQuestions()}
 };
 
+async function downloadPaperDocx(answers){
+ const id=$(answers?'answerExam':'paperExam').value;if(!id){alert('Exam নির্বাচন করুন');return}
+ const D=window.docx;if(!D){alert('DOCX library load হয়নি');return}
+ const e=exams.find(x=>String(x.id)===String(id));const qs=questions.filter(q=>String(q.exam_id)===String(id)).sort((a,b)=>(a.question_order||0)-(b.question_order||0));
+ const children=[new D.Paragraph({text:String(e?.title||'MCQ Exam'),heading:D.HeadingLevel.HEADING_1}),new D.Paragraph('সময়: '+String(e?.duration_minutes||20)+' মিনিট')];
+ qs.forEach((q,i)=>{children.push(new D.Paragraph((i+1)+'. '+String(q.question_text||'')));children.push(new D.Paragraph('ক) '+String(q.option_a||'')));children.push(new D.Paragraph('খ) '+String(q.option_b||'')));children.push(new D.Paragraph('গ) '+String(q.option_c||'')));children.push(new D.Paragraph('ঘ) '+String(q.option_d||'')));if(answers)children.push(new D.Paragraph('সঠিক উত্তর: '+String(answerBn(q.correct_option))));});
+ const doc=new D.Document({sections:[{children}]});const blob=await D.Packer.toBlob(doc);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(answers?'answer-paper-':'question-paper-')+id+'.docx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
 function paperHTML(examId,answers=false){
  const e=exams.find(x=>String(x.id)===String(examId));const qs=questions.filter(q=>String(q.exam_id)===String(examId)).sort((a,b)=>(a.question_order||0)-(b.question_order||0));
  if(!e)return"";
@@ -354,7 +416,7 @@ function printPaper(answers){
  const id=$(answers?"answerExam":"paperExam").value;if(!id){alert("Exam নির্বাচন করুন");return}
  const w=window.open("","_blank");w.document.write(paperHTML(id,answers));w.document.close();w.focus();setTimeout(()=>w.print(),400);
 }
-$("printPaperBtn").onclick=()=>printPaper(false);$("printAnswerBtn").onclick=()=>printPaper(true);
+$("printPaperBtn").onclick=()=>printPaper(false);$("printAnswerBtn").onclick=()=>printPaper(true);$("docxPaperBtn").onclick=()=>downloadPaperDocx(false);$("docxAnswerBtn").onclick=()=>downloadPaperDocx(true);
 
 session();
 </script>
