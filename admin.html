@@ -25,6 +25,8 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
 .modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}.modalBox{background:#fff;width:min(720px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:18px}
 .distRow{display:grid;grid-template-columns:1fr 100px;gap:8px;margin:6px 0}
 @media(max-width:650px){.statgrid{grid-template-columns:1fr}.wrap{padding:10px}.card{padding:14px}.menuPanel{right:-4px;width:calc(100vw - 28px)}}
+
+.categoryChips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}.categoryChips button{border:1px solid #d0d7de;background:#fff;border-radius:999px;padding:7px 12px;cursor:pointer}.categoryChips button.active{font-weight:700;box-shadow:0 0 0 2px rgba(0,0,0,.08)}
 </style>
 </head>
 <body>
@@ -152,6 +154,7 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
         <p class="small">Category = সব পরীক্ষা জুড়ে ঐ ক্যাটাগরির প্রশ্ন একত্রে দেখাবে। Exam দিলে নির্দিষ্ট পরীক্ষার প্রশ্নগুলো দেখাবে।</p>
         <div class="toolbar">
           <select id="bankExam"></select><select id="bankCategory"></select><input id="bankSearch" placeholder="প্রশ্ন খুঁজুন">
+          <div id="categoryChips" class="categoryChips"></div>
         </div>
         <div id="bankInfo" class="msg"></div>
         <div class="tableWrap"><table>
@@ -335,6 +338,14 @@ $("saveQuestionBtn").onclick=async()=>{
  const {error}=await db.from("questions").insert(row);if(error)msg("manualMsg",error.message,"error");else{msg("manualMsg","Question সংরক্ষণ হয়েছে","success");["qText","optA","optB","optC","optD"].forEach(id=>$(id).value="");$("correct").value="";await loadQuestions()}
 };
 
+function renderCategoryChips(){
+ const wrap=$("categoryChips"); if(!wrap)return;
+ const selected=canonicalCat($("bankCategory").value);
+ const cats=[...new Set(questions.map(q=>canonicalCat(q.category)).filter(Boolean))];
+ const all=[...CATEGORIES,...cats.filter(c=>!CATEGORIES.includes(c))];
+ wrap.innerHTML=[`<button type="button" data-cat="" class="${!selected?'active':''}">সব Category</button>`,...all.map(c=>`<button type="button" data-cat="${safe(c)}" class="${selected===c?'active':''}">${safe(c)}</button>` )].join('');
+ wrap.querySelectorAll('button').forEach(b=>b.onclick=()=>{ $("bankCategory").value=b.dataset.cat; renderCategoryChips(); renderBank(); });
+}
 function renderBank(){
  const ex=$("bankExam").value,cat=canonicalCat($("bankCategory").value),s=$("bankSearch").value.trim().toLowerCase();
  const f=questions.filter(q=>(!ex||String(q.exam_id)===String(ex))&&(!cat||canonicalCat(q.category)===cat)&&(!s||String(q.question_text||"").toLowerCase().includes(s)));
