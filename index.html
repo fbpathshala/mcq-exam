@@ -52,7 +52,13 @@ async function loadExam(){
   q=examId?q.eq("id",examId):q.eq("is_active",true).order("created_at",{ascending:false}).limit(1);
   const {data:exams,error}=await q; if(error)throw error; if(!exams?.length)throw new Error("কোনো সক্রিয়/নির্বাচিত পরীক্ষা পাওয়া যায়নি।"); exam=exams[0];
   document.getElementById("examTitle").textContent=exam.title;
-  const {data:st,error:se}=await supabaseClient.from("exam_settings").select("*").eq("exam_id",exam.id).maybeSingle(); if(se)throw se; settings=st||{duration_minutes:exam.duration_minutes||20,total_questions:0,marks_per_question:1,negative_mark:0,total_marks:0,pass_mark:0,show_answers:true,random_questions:false,random_options:false};
+  let st=null;
+  try {
+    const r=await supabaseClient.from("exam_settings").select("*").eq("exam_id",exam.id).maybeSingle();
+    if(!r.error) st=r.data;
+    else console.warn("exam_settings unavailable; using exam defaults", r.error.message);
+  } catch(e) { console.warn("exam_settings unavailable; using exam defaults", e); }
+  settings=st||{duration_minutes:exam.duration_minutes||20,total_questions:0,marks_per_question:1,negative_mark:0,total_marks:0,pass_mark:0,show_answers:true,random_questions:false,random_options:false};
   const {data:qs,error:qe}=await supabaseClient.from("student_questions").select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order").eq("exam_id",exam.id).order("question_order",{ascending:true});
   if(qe)throw qe; let allQuestions=qs||[];
   if(!allQuestions.length)throw new Error("এই পরীক্ষায় কোনো প্রশ্ন নেই।");
