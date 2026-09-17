@@ -228,7 +228,7 @@ function fillExam(id,allLabel="Exam নির্বাচন করুন"){
  e.innerHTML=`<option value="">${allLabel}</option>`+exams.map(x=>`<option value="${x.id}">${safe(x.title)}</option>`).join("");
 }
 function fillAllSelects(){
- if($('distCategory')) $('distCategory').innerHTML="<option value="">Category নির্বাচন করুন</option>"+CATEGORIES.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join("");
+ if($('distCategory')) $('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join("");
  ["settingsExam","manualExam","bulkExam","editExam","paperExam","answerExam"].forEach(id=>fillExam(id));
  fillExam("bankExam","সব পরীক্ষা"); fillExam("resultExam","সব পরীক্ষা");
  fillCategory("manualCategory",false); fillCategory("editCategory",false); fillCategory("bankCategory",true);
@@ -246,6 +246,7 @@ $("loginBtn").onclick=async()=>{
 $("logoutBtn").onclick=async()=>{await db.auth.signOut();location.reload()};
 $("menuBtn").onclick=()=>{$("menuPanel").classList.toggle("hidden")};
 document.querySelectorAll(".menuPanel button[data-view]").forEach(b=>b.onclick=()=>{showView(b.dataset.view);$("menuPanel").classList.add("hidden")});
+document.addEventListener("click",e=>{if(!e.target.closest(".menu")) $("menuPanel").classList.add("hidden")});
 function showView(v){
  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
  $("view-"+v).classList.add("active");
@@ -417,8 +418,6 @@ function printPaper(answers){
  const w=window.open("","_blank");w.document.write(paperHTML(id,answers));w.document.close();w.focus();setTimeout(()=>w.print(),400);
 }
 $("printPaperBtn").onclick=()=>printPaper(false);$("printAnswerBtn").onclick=()=>printPaper(true);$("docxPaperBtn").onclick=()=>downloadPaperDocx(false);$("docxAnswerBtn").onclick=()=>downloadPaperDocx(true);
-
-session();
 </script>
 </body>
 </html>
