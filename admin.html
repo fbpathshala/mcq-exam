@@ -354,6 +354,7 @@ $("saveQuestionBtn").onclick=async()=>{
 };
 
 function renderBank(){
+ renderBankCategories(canonicalCat($("bankCategory").value));
  const ex=$("bankExam").value,cat=canonicalCat($("bankCategory").value),s=$("bankSearch").value.trim().toLowerCase();
  const f=questions.filter(q=>(!ex||String(q.exam_id)===String(ex))&&(!cat||canonicalCat(q.category)===cat)&&(!s||String(q.question_text||"").toLowerCase().includes(s)));
  $("bankInfo").textContent=`মোট ${bn(f.length)}টি প্রশ্ন পাওয়া গেছে। ${cat?`বর্তমান Category: ${cat}`:'সব Category'}`;
