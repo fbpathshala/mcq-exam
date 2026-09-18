@@ -17,7 +17,7 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
 .menuBtn{width:48px;height:44px;padding:0;font-size:27px;background:#111827;border-radius:10px}.menu{position:relative}.menuPanel{position:absolute;right:0;top:52px;width:280px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 35px #0002;padding:8px;z-index:50}.menuPanel button{background:#fff;color:#172033;text-align:left;font-weight:600;margin:2px 0}.menuPanel button:hover{background:#f3f4f6}
 .menuPanel{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .menuPanel button{min-height:48px;text-align:center;border:1px solid #eef0f4}
-.menuPanel button:last-child{grid-column:1/-1}
+.menuPanel button:last-child{grid-column:1/-1}.categoryChips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.categoryChips button{width:auto;padding:8px 12px;border:1px solid #d0d5dd;background:#fff;color:#172033}.categoryChips button.active{background:var(--primary);color:#fff}.categoryChips .all{font-weight:800}
 @media(max-width:430px){.menuPanel{grid-template-columns:1fr}.menuPanel button:last-child{grid-column:auto}}
 .sectionTitle{display:flex;align-items:center;gap:8px}.sectionTitle h2{margin:0}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.stat{padding:16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:space-between;min-height:82px}.stat b{font-size:13px;color:var(--muted)}.stat strong{font-size:28px;margin:0}
 .view{display:none}.view.active{display:block}.toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
@@ -25,8 +25,6 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
 .modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}.modalBox{background:#fff;width:min(720px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:18px}
 .distRow{display:grid;grid-template-columns:1fr 100px;gap:8px;margin:6px 0}
 @media(max-width:650px){.statgrid{grid-template-columns:1fr}.wrap{padding:10px}.card{padding:14px}.menuPanel{right:-4px;width:calc(100vw - 28px)}}
-
-.categoryChips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}.categoryChips button{border:1px solid #d0d7de;background:#fff;border-radius:999px;padding:7px 12px;cursor:pointer}.categoryChips button.active{font-weight:700;box-shadow:0 0 0 2px rgba(0,0,0,.08)}
 </style>
 </head>
 <body>
@@ -153,9 +151,10 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
         <h2>🗂️ Question Bank</h2>
         <p class="small">Category = সব পরীক্ষা জুড়ে ঐ ক্যাটাগরির প্রশ্ন একত্রে দেখাবে। Exam দিলে নির্দিষ্ট পরীক্ষার প্রশ্নগুলো দেখাবে।</p>
         <div class="toolbar">
-          <select id="bankExam"></select><select id="bankCategory"></select><input id="bankSearch" placeholder="প্রশ্ন খুঁজুন">
-          <div id="categoryChips" class="categoryChips"></div>
+          <select id="bankExam"></select><input id="bankSearch" placeholder="প্রশ্ন খুঁজুন">
         </div>
+        <div id="bankCategories" class="categoryChips"></div>
+        <select id="bankCategory" class="hidden"></select>
         <div id="bankInfo" class="msg"></div>
         <div class="tableWrap"><table>
           <thead><tr><th>ক্রম</th><th>Category</th><th>Exam</th><th>Question</th><th>সঠিক</th><th>Actions</th></tr></thead>
@@ -279,6 +278,7 @@ async function loadSettings(){
  if(!id){$('distribution').innerHTML='';return}
  const ex=exams.find(e=>String(e.id)===String(id));
  let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
+ if(r.error){console.warn('exam_settings unavailable; using exam defaults',r.error.message)}
  const s=r.data||{};
  $('totalQuestions').value=s.total_questions??questions.filter(q=>String(q.exam_id)===String(id)).length;
  $('totalMarks').value=s.total_marks??'';
@@ -297,6 +297,7 @@ async function loadSettings(){
 async function renderDistribution(){
  const id=$('settingsExam').value;if(!id)return;
  const r=await db.from('exam_category_settings').select('*').eq('exam_id',id).order('category');
+ if(r.error){console.warn('exam_category_settings unavailable; showing no distribution',r.error.message)}
  const rows=r.data||[];
  $('distribution').innerHTML=rows.map(x=>`<tr><td>${safe(x.category)}</td><td>${bn(x.question_count)}</td><td><button class="danger" onclick="deleteDist('${safe(x.category)}')">Delete</button></td></tr>`).join('');
 }
@@ -338,21 +339,21 @@ $("saveQuestionBtn").onclick=async()=>{
  const {error}=await db.from("questions").insert(row);if(error)msg("manualMsg",error.message,"error");else{msg("manualMsg","Question সংরক্ষণ হয়েছে","success");["qText","optA","optB","optC","optD"].forEach(id=>$(id).value="");$("correct").value="";await loadQuestions()}
 };
 
-function renderCategoryChips(){
- const wrap=$("categoryChips"); if(!wrap)return;
- const selected=canonicalCat($("bankCategory").value);
- const cats=[...new Set(questions.map(q=>canonicalCat(q.category)).filter(Boolean))];
- const all=[...CATEGORIES,...cats.filter(c=>!CATEGORIES.includes(c))];
- wrap.innerHTML=[`<button type="button" data-cat="" class="${!selected?'active':''}">সব Category</button>`,...all.map(c=>`<button type="button" data-cat="${safe(c)}" class="${selected===c?'active':''}">${safe(c)}</button>` )].join('');
- wrap.querySelectorAll('button').forEach(b=>b.onclick=()=>{ $("bankCategory").value=b.dataset.cat; renderCategoryChips(); renderBank(); });
-}
 function renderBank(){
  const ex=$("bankExam").value,cat=canonicalCat($("bankCategory").value),s=$("bankSearch").value.trim().toLowerCase();
  const f=questions.filter(q=>(!ex||String(q.exam_id)===String(ex))&&(!cat||canonicalCat(q.category)===cat)&&(!s||String(q.question_text||"").toLowerCase().includes(s)));
  $("bankInfo").textContent=`মোট ${bn(f.length)}টি প্রশ্ন পাওয়া গেছে।`;
  $("bankTable").innerHTML=f.map((q,i)=>`<tr><td>${bn(i+1)}</td><td>${safe(canonicalCat(q.category))}</td><td>${safe(q.exams?.title||"")}</td><td>${safe(q.question_text)}</td><td>${answerBn(q.correct_option)}</td><td><div class="actions"><button onclick="openEdit('${q.id}')">Edit</button><button class="danger" onclick="deleteQuestion('${q.id}')">Delete</button></div></td></tr>`).join("");
+ renderBankCategories(cat);
 }
-$("bankExam").onchange=renderBank;$("bankCategory").onchange=renderBank;$("bankSearch").oninput=renderBank;
+function renderBankCategories(selected=""){
+ const box=$("bankCategories"); if(!box)return;
+ const cats=[...new Set(questions.map(q=>canonicalCat(q.category)).filter(Boolean))];
+ box.innerHTML="";
+ const all=document.createElement("button"); all.className="all"+(!selected?" active":""); all.textContent="সব Category"; all.onclick=()=>{$("bankCategory").value="";renderBank()}; box.appendChild(all);
+ cats.forEach(c=>{const b=document.createElement("button");b.textContent=c;b.className=canonicalCat(c)===selected?"active":"";b.onclick=()=>{$("bankCategory").value=c;renderBank()};box.appendChild(b)});
+}
+$("bankExam").onchange=renderBank;$("bankCategory").onchange=renderBank;$("bankSearch").oninput=renderBank; $("manualBox").classList.add("hidden");$("bulkBox").classList.add("hidden");
 
 window.openEdit=id=>{
  const q=questions.find(x=>String(x.id)===String(id));if(!q)return;
