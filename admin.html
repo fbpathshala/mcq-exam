@@ -5,436 +5,101 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MCQ Exam Admin</title>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--primary:#2563eb;--danger:#dc2626;--ok:#15803d}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Noto Sans Bengali",sans-serif}
-.wrap{max-width:1180px;margin:auto;padding:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 4px 18px #0000000a}
-.hidden{display:none!important}.small{font-size:13px;color:var(--muted)}.muted{color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-input,select,textarea,button{width:100%;padding:11px 12px;border:1px solid #d0d5dd;border-radius:9px;font-size:15px;font-family:inherit}
-textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;font-weight:700;cursor:pointer}button.secondary{background:#64748b}button.danger{background:var(--danger)}button.light{background:#eef2ff;color:#1d4ed8;border:1px solid #c7d2fe}
-.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.actions button{width:auto;min-width:120px}.msg{padding:10px 12px;border-radius:9px;background:#f1f5f9;margin:10px 0}.success{background:#ecfdf3;color:#166534}.error{background:#fef2f2;color:#991b1b}
-.login{max-width:430px;margin:8vh auto}.top{display:flex;align-items:center;gap:12px}.top h1{margin:0;font-size:22px}.spacer{margin-left:auto}
-.menuBtn{width:48px;height:44px;padding:0;font-size:27px;background:#111827;border-radius:10px}.menu{position:relative}.menuPanel{position:absolute;right:0;top:52px;width:280px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 35px #0002;padding:8px;z-index:50}.menuPanel button{background:#fff;color:#172033;text-align:left;font-weight:600;margin:2px 0}.menuPanel button:hover{background:#f3f4f6}
-.menuPanel{display:grid;grid-template-columns:1fr 1fr;gap:5px}
-.menuPanel button{min-height:48px;text-align:center;border:1px solid #eef0f4}
-.menuPanel button:last-child{grid-column:1/-1}.categoryChips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.categoryChips button{width:auto;padding:8px 12px;border:1px solid #d0d5dd;background:#fff;color:#172033}.categoryChips button.active{background:var(--primary);color:#fff}.categoryChips .all{font-weight:800}
-.bankSectionLabel{font-weight:800;margin-top:14px}.categoryChips button{min-width:110px}.categoryChips button .count{opacity:.8;margin-left:4px}.bankList{display:grid;gap:10px;margin-top:12px}.bankItem{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.bankTop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.bankNo{font-weight:800}.bankCat,.bankExamBadge{display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f5f9;font-size:12px;font-weight:700}.bankQuestion{font-size:16px;line-height:1.6;margin:8px 0}.bankActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.bankActions button{width:auto;min-width:110px}.editMain{background:var(--primary)}
-@media(max-width:650px){.bankItem{padding:12px}.bankQuestion{font-size:15px}.categoryChips button{flex:1 1 calc(50% - 7px);min-width:0}}
-@media(max-width:430px){.menuPanel{grid-template-columns:1fr}.menuPanel button:last-child{grid-column:auto}}
-.sectionTitle{display:flex;align-items:center;gap:8px}.sectionTitle h2{margin:0}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.stat{padding:16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:space-between;min-height:82px}.stat b{font-size:13px;color:var(--muted)}.stat strong{font-size:28px;margin:0}
-.view{display:none}.view.active{display:block}.toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
-.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;min-width:760px}th,td{padding:9px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left;font-size:14px}th{background:#f8fafc}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}.activeBadge{background:#dcfce7;color:#166534}.closedBadge{background:#fee2e2;color:#991b1b}
-.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}.modalBox{background:#fff;width:min(720px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:18px}
-.distRow{display:grid;grid-template-columns:1fr 100px;gap:8px;margin:6px 0}
-@media(max-width:650px){.statgrid{grid-template-columns:1fr}.wrap{padding:10px}.card{padding:14px}.menuPanel{right:-4px;width:calc(100vw - 28px)}}
+body{font-family:Arial,"Noto Sans Bengali",sans-serif;background:#f4f6f8;margin:0;color:#222}.wrap{max-width:1150px;margin:auto;padding:14px}.card{background:#fff;border-radius:12px;padding:16px;margin:12px 0;box-shadow:0 2px 8px #0001}h1,h2{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}input,select,button,textarea{width:100%;box-sizing:border-box;padding:10px;margin:5px 0;border:1px solid #ccd3da;border-radius:7px;font-size:15px}button{cursor:pointer;background:#1769aa;color:#fff;border:0;font-weight:bold}button.gray{background:#607d8b}button.danger{background:#c62828}button.green{background:#2e7d32}.hidden{display:none}.msg{padding:9px;border-radius:7px;margin:8px 0;background:#eef3f7}.success{background:#e8f5e9;color:#1b5e20}.error{background:#ffebee;color:#b71c1c}.actions{display:flex;gap:6px;flex-wrap:wrap}.actions button{width:auto}.small{font-size:13px;color:#667}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}th,td{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}th{background:#eef3f7}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:15px;z-index:20}.modal>div{background:#fff;padding:18px;border-radius:12px;width:min(700px,100%);max-height:90vh;overflow:auto}.paperbox{border:1px solid #ddd;border-radius:10px;padding:12px;margin:10px 0}.qcard{border:1px solid #ddd;border-radius:8px;padding:12px;margin:10px 0}.option{margin:4px 0}.chip{display:inline-block;background:#eef3f7;border-radius:20px;padding:5px 9px;margin:3px}.muted{color:#666}.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.topbar button{width:auto}.paper-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}@media(max-width:600px){.wrap{padding:8px}.card{padding:12px}.topbar{align-items:stretch}.topbar button{width:100%}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div id="loginView" class="card login">
-    <h1>MCQ Exam Admin</h1>
-    <p class="small">Admin Login</p>
-    <input id="email" type="email" placeholder="Admin Email">
-    <input id="password" type="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <div id="loginMsg" class="msg"></div>
-  </div>
-
-  <div id="app" class="hidden">
-    <div class="card top">
-      <div>
-        <h1>MCQ Exam Admin</h1>
-        <div id="adminEmail" class="small"></div>
-      </div>
-      <div class="spacer"></div>
-      <div class="menu">
-        <button class="menuBtn" id="menuBtn" aria-label="Menu">⋮</button>
-        <div class="menuPanel hidden" id="menuPanel">
-          <button data-view="exams">📋 Exam Management</button>
-          <button data-view="settings">⚙️ Exam Settings</button>
-          <button data-view="questions">📝 Question Management</button>
-          <button data-view="bank">🗂️ Question Bank</button>
-          <button data-view="results">📊 Results</button>
-          <button data-view="links">🔗 Exam Link</button>
-          <button data-view="papers">📄 Question Paper</button>
-          <button data-view="answers">✅ Answer Paper</button>
-          <button id="logoutBtn">🚪 Logout</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="statgrid">
-        <div class="stat"><b>পরীক্ষা</b><strong id="examCount">0</strong></div>
-        <div class="stat"><b>মোট প্রশ্ন</b><strong id="questionCount">0</strong></div>
-        <div class="stat"><b>ফলাফল</b><strong id="resultCount">0</strong></div>
-      </div>
-    </div>
-
-    <section id="view-exams" class="view active">
-      <div class="card">
-        <div class="sectionTitle"><h2>📋 Exam Management</h2></div>
-        <div class="grid" style="margin-top:12px">
-          <input id="examTitle" placeholder="নতুন পরীক্ষার নাম">
-          <button id="createExamBtn">➕ নতুন পরীক্ষা তৈরি</button>
-        </div>
-        <div id="examMsg" class="msg"></div>
-        <div class="tableWrap"><table>
-          <thead><tr><th>Exam</th><th>Duration</th><th>Status</th><th>Exam Link</th><th>Actions</th></tr></thead>
-          <tbody id="examTable"></tbody>
-        </table></div>
-      </div>
-    </section>
-
-    <section id="view-settings" class="view">
-      <div class="card">
-        <h2>⚙️ Exam Settings</h2>
-        <p class="small">প্রতিটি Exam-এর আলাদা marks, negative marking, time, date এবং question distribution সংরক্ষণ করুন।</p>
-        <select id="settingsExam"></select>
-        <div class="grid">
-          <input id="totalQuestions" type="number" min="1" placeholder="Total Questions">
-          <input id="totalMarks" type="number" step="0.01" min="0" placeholder="Total Marks">
-          <input id="passMark" type="number" step="0.01" min="0" placeholder="Pass Mark">
-          <input id="duration" type="number" min="1" placeholder="Duration (minutes)">
-          <input id="marksPerQuestion" type="number" step="0.01" min="0" placeholder="Marks / Question">
-          <input id="negativeMark" type="number" step="0.01" min="0" placeholder="Negative Mark">
-          <input id="examDate" type="date" title="Exam Date">
-          <input id="startTime" type="time" title="Start Time">
-          <input id="endTime" type="time" title="End Time">
-        </div>
-        <label><input id="showAnswers" type="checkbox" style="width:auto"> Submit-এর পর Correct Answer দেখাবে</label>
-        <label><input id="randomQuestions" type="checkbox" style="width:auto"> Random Questions</label>
-        <label><input id="randomOptions" type="checkbox" style="width:auto"> Random Options</label>
-        <button id="saveSettingsBtn">💾 Settings Save</button>
-        <div id="settingsMsg" class="msg"></div>
-      </div>
-      <div class="card">
-        <h3>Category-wise Question Distribution</h3>
-        <div class="grid"><select id="distCategory"></select><input id="distCount" type="number" min="0" placeholder="Question Count"><button id="saveDistBtn">Add / Update</button></div>
-        <div class="tableWrap"><table><thead><tr><th>Category</th><th>Questions</th><th>Action</th></tr></thead><tbody id="distribution"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="view-questions" class="view">
-      <div class="card">
-        <h2>📝 Question Management</h2>
-        <div class="actions">
-          <button id="manualAddBtn">➕ Manual Add</button>
-          <button id="bulkUploadBtn" class="light">📥 Excel / CSV Upload</button>
-        </div>
-      </div>
-      <div id="manualBox" class="card hidden">
-        <h3>Manual Add</h3>
-        <div class="grid">
-          <select id="manualExam"></select><select id="manualCategory"></select>
-        </div>
-        <textarea id="qText" rows="3" placeholder="Question"></textarea>
-        <div class="grid">
-          <input id="optA" placeholder="ক) Option A"><input id="optB" placeholder="খ) Option B">
-          <input id="optC" placeholder="গ) Option C"><input id="optD" placeholder="ঘ) Option D">
-        </div>
-        <select id="correct"><option value="">সঠিক উত্তর</option><option value="A">ক</option><option value="B">খ</option><option value="C">গ</option><option value="D">ঘ</option></select>
-        <button id="saveQuestionBtn">Save Question</button>
-        <div id="manualMsg" class="msg"></div>
-      </div>
-      <div id="bulkBox" class="card hidden">
-        <h3>Excel / CSV Upload</h3>
-        <p class="small">Upload ফাইলে Category প্রতিটি row-তে আগে থেকেই থাকবে। এখানে শুধু Target Exam নির্বাচন করতে হবে।</p>
-        <select id="bulkExam"></select>
-        <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
-        <div class="actions"><button id="previewBtn">Preview</button><button id="uploadBtn">Upload</button></div>
-        <div id="uploadMsg" class="msg"></div>
-        <div class="tableWrap"><table><thead id="previewHead"></thead><tbody id="previewBody"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="view-bank" class="view">
-      <div class="card">
-        <h2>🗂️ Question Bank</h2>
-        <p class="small">Category = সব পরীক্ষা জুড়ে ঐ ক্যাটাগরির প্রশ্ন একত্রে দেখাবে। Exam দিলে নির্দিষ্ট পরীক্ষার প্রশ্নগুলো দেখাবে।</p>
-        <div class="toolbar">
-          <select id="bankExam"></select><input id="bankSearch" placeholder="প্রশ্ন খুঁজুন">
-        </div>
-        <div class="bankSectionLabel">ক্যাটাগরি অনুযায়ী প্রশ্ন দেখুন</div>
-        <div id="bankCategories" class="categoryChips"></div>
-        <select id="bankCategory" class="hidden"></select>
-        <div id="bankInfo" class="msg"></div>
-        <div id="bankList" class="bankList"></div>
-      </div>
-    </section>
-
-    <section id="view-results" class="view">
-      <div class="card">
-        <h2>📊 Results</h2>
-        <div class="toolbar"><select id="resultExam"></select><input id="resultSearch" placeholder="নাম/মোবাইল দিয়ে খুঁজুন"></div>
-        <div class="tableWrap"><table><thead><tr><th>Student</th><th>Facebook</th><th>District</th><th>Mobile</th><th>Exam</th><th>Score</th><th>%</th><th>Rank</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div>
-      </div>
-    </section>
-
-    <section id="view-links" class="view">
-      <div class="card"><h2>🔗 Exam Link</h2><div id="linksList"></div></div>
-    </section>
-
-    <section id="view-papers" class="view">
-      <div class="card"><h2>📄 Question Paper</h2><p class="small">Exam নির্বাচন করে browser print/save as PDF বা DOC-compatible HTML ফাইল তৈরি করা যাবে।</p><select id="paperExam"></select><div class="actions"><button id="printPaperBtn">🖨️ Print / PDF</button><button id="docxPaperBtn" class="light">⬇️ DOCX</button></div></div>
-    </section>
-
-    <section id="view-answers" class="view">
-      <div class="card"><h2>✅ Answer Paper</h2><p class="small">Exam নির্বাচন করে answer paper print/save as PDF করা যাবে।</p><select id="answerExam"></select><div class="actions"><button id="printAnswerBtn">🖨️ Print / PDF</button><button id="docxAnswerBtn" class="light">⬇️ DOCX</button></div></div>
-    </section>
-  </div>
+<div id="loginBox" class="card">
+<h1>MCQ Exam Admin</h1><p class="small">Supabase Admin Login</p>
+<input id="email" type="email" placeholder="Admin Email"><input id="password" type="password" placeholder="Password">
+<button id="loginButton">Login</button><div id="loginStatus" class="msg"></div>
 </div>
 
-<div id="editModal" class="modal hidden">
-  <div class="modalBox">
-    <h2>✏️ প্রশ্ন এডিট করুন</h2><p class="small">এখান থেকে Category, Exam, প্রশ্ন, চারটি অপশন এবং সঠিক উত্তর পরিবর্তন করতে পারবেন।</p>
-    <input id="editId" type="hidden">
-    <div class="grid"><select id="editExam"></select><select id="editCategory"></select></div>
-    <textarea id="editText" rows="3"></textarea>
-    <div class="grid"><input id="editA"><input id="editB"><input id="editC"><input id="editD"></div>
-    <select id="editCorrect"><option value="A">ক</option><option value="B">খ</option><option value="C">গ</option><option value="D">ঘ</option></select>
-    <div class="actions"><button id="updateBtn">💾 পরিবর্তন সংরক্ষণ করুন</button><button id="closeModal" class="secondary">বন্ধ করুন</button></div>
-    <div id="editMsg" class="msg"></div>
-  </div>
+<div id="panel" class="hidden">
+<div class="card topbar"><div><h1>MCQ Exam Admin</h1><div class="small" id="adminEmail"></div></div><button id="logoutButton" class="gray">Logout</button></div>
+
+<div class="grid"><div class="card"><b>Exams</b><h2 id="examCount">0</h2></div><div class="card"><b>Questions</b><h2 id="questionCount">0</h2></div></div>
+
+<div class="card"><h2>Exam Management</h2><div class="grid"><input id="examTitle" placeholder="Exam-এর নাম"><button id="createExamButton">Create Exam</button><button id="refreshExamsButton" class="gray">Refresh Exams</button></div><div id="examStatus" class="msg"></div><div style="overflow:auto"><table><thead><tr><th>Title</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="examTable"></tbody></table></div></div>
+
+<div class="card"><h2>Exam Settings</h2><select id="settingsExam"><option value="">Exam নির্বাচন করুন</option></select><div class="grid"><input id="totalMarks" type="number" placeholder="Total Marks"><input id="passMark" type="number" placeholder="Pass Mark"><input id="duration" type="number" placeholder="Duration (minutes)"><input id="marksPerQuestion" type="number" step="0.01" placeholder="Marks / Question"><input id="negativeMark" type="number" step="0.01" placeholder="Negative Mark"><input id="examDate" type="date"><input id="startTime" type="time"><input id="endTime" type="time"></div><label><input id="showAnswers" type="checkbox"> Show Answers</label><label><input id="randomQuestions" type="checkbox"> Random Questions</label><label><input id="randomOptions" type="checkbox"> Random Options</label><button id="saveSettingsButton">Save Settings</button><div id="settingsStatus" class="msg"></div><p class="small">নোট: এই Admin ফাইলটি বিদ্যমান <code>exams</code> টেবিলের সেটিংস ব্যবহার করে। আলাদা exam_settings টেবিল থাকলে সেটিও স্বয়ংক্রিয়ভাবে ব্যবহার করার চেষ্টা করবে।</p></div>
+
+<div class="card"><h2>Manual Add Question</h2><div class="grid"><select id="manualCategory"><option value="">Category নির্বাচন করুন</option></select><select id="manualExam"><option value="">Exam নির্বাচন করুন</option></select></div><textarea id="question" rows="3" placeholder="প্রশ্ন"></textarea><div class="grid"><input id="optionA" placeholder="ক - Option A"><input id="optionB" placeholder="খ - Option B"><input id="optionC" placeholder="গ - Option C"><input id="optionD" placeholder="ঘ - Option D"></div><select id="correctAnswer"><option value="">সঠিক উত্তর নির্বাচন করুন</option><option value="A">ক</option><option value="B">খ</option><option value="C">গ</option><option value="D">ঘ</option></select><textarea id="explanation" rows="3" placeholder="ব্যাখ্যা (ঐচ্ছিক)"></textarea><button id="saveQuestionButton">প্রশ্ন সংরক্ষণ</button><div id="questionStatus" class="msg"></div></div>
+
+<div class="card"><h2>Excel / CSV Upload</h2><p class="small">কলাম: ক্রম, Category, Question/প্রশ্ন, Option A/ক, Option B/খ, Option C/গ, Option D/ঘ, Correct Answer/সঠিক উত্তর, Explanation/ব্যাখ্যা</p><div class="grid"><select id="bulkExam"><option value="">Exam নির্বাচন করুন</option></select><select id="bulkCategory"><option value="">Excel-এর Category ব্যবহার হবে</option></select></div><input id="fileInput" type="file" accept=".xlsx,.xls,.csv"><div class="actions"><button id="previewButton">Preview</button><button id="confirmUploadButton">Upload</button></div><div id="uploadStatus" class="msg"></div><div style="overflow:auto"><table><thead id="previewHead"></thead><tbody id="previewBody"></tbody></table></div></div>
+
+<div class="card"><h2>Question Bank</h2><div class="grid"><select id="filterCategory"><option value="">All Categories</option></select><select id="filterExam"><option value="">All Exams</option></select><input id="questionSearch" placeholder="প্রশ্ন খুঁজুন"></div><button id="refreshQuestionsButton" class="gray">Refresh Questions</button><div id="bankStatus" class="msg"></div><div id="questionBank"></div></div>
+
+<div class="card"><h2>Question Paper / Answer Paper</h2><div class="grid"><select id="paperExam"><option value="">Exam নির্বাচন করুন</option></select><select id="paperCategory"><option value="">সব Category</option></select></div><div class="paper-actions"><button id="loadPaperButton">প্রশ্নপত্র তৈরি</button><button id="questionPdfButton" class="green">Question Paper PDF</button><button id="questionDocxButton" class="green">Question Paper DOCX</button><button id="answerPdfButton" class="green">Answer Paper PDF</button><button id="answerDocxButton" class="green">Answer Paper DOCX</button></div><div id="paperStatus" class="msg"></div><div id="paperPreview"></div></div>
+
+<div class="card"><h2>Results</h2><button id="refreshResultsButton" class="gray">Refresh Results</button><div style="overflow:auto"><table><thead><tr><th>Student</th><th>Facebook</th><th>District</th><th>Mobile</th><th>Exam</th><th>Score</th><th>%</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div></div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<div id="editModal" class="modal hidden"><div><h2>প্রশ্ন এডিট</h2><input id="editId" type="hidden"><select id="editCategory"></select><select id="editExam"></select><textarea id="editQuestion" rows="3" placeholder="প্রশ্ন"></textarea><div class="grid"><input id="editA" placeholder="ক - Option A"><input id="editB" placeholder="খ - Option B"><input id="editC" placeholder="গ - Option C"><input id="editD" placeholder="ঘ - Option D"></div><select id="editCorrect"><option value="A">ক</option><option value="B">খ</option><option value="C">গ</option><option value="D">ঘ</option></select><textarea id="editExplanation" rows="3" placeholder="ব্যাখ্যা (ঐচ্ছিক)"></textarea><div class="actions"><button id="updateQuestionButton">Update</button><button id="cloneFromEditButton" class="green">এই প্রশ্ন থেকে নতুন প্রশ্ন</button><button id="closeEditButton" class="gray">Close</button></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://unpkg.com/html-docx-js/dist/html-docx.js"></script>
 <script>
 const SUPABASE_URL="https://ydvbnalhcnfqpxkkmywr.supabase.co";
 const SUPABASE_KEY="sb_publishable_xCbSWDkASsbUPl-WmygyMw_eVrJY_9a";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const CATEGORIES=["বাংলা সাহিত্য","বাংলা ব্যাকরণ","গণিত","ইংরেজি","বাংলাদেশ","আন্তর্জাতিক","বিজ্ঞান","কম্পিউটার ও তথ্যপ্রযুক্তি","সাম্প্রতিক প্রশ্নোত্তর","ভূগোল"];
-let exams=[],questions=[],results=[],uploadRows=[];
-
+const LETTERS={A:"ক",B:"খ",C:"গ",D:"ঘ"};
+let exams=[],questions=[],uploadRows=[],paperQuestions=[],currentUser=null;
 const $=id=>document.getElementById(id);
-const safe=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
-const bn=n=>String(n).replace(/\d/g,d=>"০১২৩৪৫৬৭৮৯"[d]);
-const msg=(id,t,c="")=>{$(id).textContent=t;$(id).className="msg "+c};
-const answerBn=v=>({A:"ক",B:"খ",C:"গ",D:"ঘ"})[v]||v;
-
-function normCat(v){ return String(v??"").replace(/\u00a0/g," ").trim().replace(/\s+/g," "); }
-function canonicalCat(v){
- const c=normCat(v);
- const aliases={"ব্যাকরণ":"বাংলা ব্যাকরণ","বাংলা ব্যাকরণ":"বাংলা ব্যাকরণ","বাংলাদেশ বিষয়াবলি":"বাংলাদেশ","বাংলাদেশ বিষয়াবলি":"বাংলাদেশ","আন্তর্জাতিক বিষয়াবলি":"আন্তর্জাতিক","আন্তর্জাতিক বিষয়াবলি":"আন্তর্জাতিক","সাধারণ বিজ্ঞান":"বিজ্ঞান","বিজ্ঞান":"বিজ্ঞান","গণিত":"গণিত","ইংরেজি":"ইংরেজি","বাংলা সাহিত্য":"বাংলা সাহিত্য","কম্পিউটার ও তথ্যপ্রযুক্তি":"কম্পিউটার ও তথ্যপ্রযুক্তি","সাম্প্রতিক প্রশ্নোত্তর":"সাম্প্রতিক প্রশ্নোত্তর","ভূগোল":"ভূগোল"};
- return aliases[c] || c;
+function safe(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+function msg(id,text,type=""){const e=$(id);if(!e)return;e.textContent=text;e.className="msg "+type;}
+function initCategories(){["manualCategory","filterCategory","editCategory","paperCategory"].forEach(id=>{const e=$(id);if(!e)return;const first=id==="filterCategory"||id==="paperCategory"?"<option value=\"\">সব Category</option>":"<option value=\"\">Category নির্বাচন করুন</option>";e.innerHTML=first;CATEGORIES.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;e.appendChild(o);});});const bc=$("bulkCategory");bc.innerHTML='<option value="">Excel-এর Category ব্যবহার হবে</option>';CATEGORIES.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;bc.appendChild(o);});}
+function populateExams(){["manualExam","filterExam","editExam","settingsExam","bulkExam","paperExam"].forEach(id=>{const e=$(id);if(!e)return;e.innerHTML='<option value="">Exam নির্বাচন করুন</option>';exams.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=x.title;e.appendChild(o);});});}
+async function checkSession(){const {data}=await db.auth.getSession();if(data.session){currentUser=data.session.user;$("loginBox").classList.add("hidden");$("panel").classList.remove("hidden");$("adminEmail").textContent=currentUser.email||"";await loadExams();await loadResults();}else{$("loginBox").classList.remove("hidden");$("panel").classList.add("hidden");}}
+async function login(){const email=$("email").value.trim(),password=$("password").value;if(!email||!password){msg("loginStatus","Email ও Password দিন","error");return;}msg("loginStatus","Login হচ্ছে...");const {data,error}=await db.auth.signInWithPassword({email,password});if(error){msg("loginStatus",error.message,"error");return;}currentUser=data.user;await checkSession();}
+async function logout(){await db.auth.signOut();currentUser=null;$("panel").classList.add("hidden");$("loginBox").classList.remove("hidden");}
+async function loadExams(){const {data,error}=await db.from("exams").select("*").order("created_at",{ascending:false});if(error){msg("examStatus",error.message,"error");return;}exams=data||[];$("examCount").textContent=exams.length;populateExams();renderExams();}
+function renderExams(){$("examTable").innerHTML=exams.map(x=>`<tr><td>${safe(x.title)}</td><td>${x.is_active?"Active":"Inactive"}</td><td>${safe(x.exam_date||"")}</td><td><div class="actions"><button onclick="toggleExam('${x.id}')">${x.is_active?"Deactivate":"Activate"}</button><button class="danger" onclick="deleteExam('${x.id}')">Delete</button></div></td></tr>`).join("");}
+async function createExam(){const title=$("examTitle").value.trim();if(!title){msg("examStatus","Exam-এর নাম দিন","error");return;}const {data,error}=await db.from("exams").insert({title,is_active:true}).select().single();if(error){msg("examStatus",error.message,"error");return;}$("examTitle").value="";msg("examStatus","Exam তৈরি হয়েছে","success");await loadExams();}
+async function toggleExam(id){const x=exams.find(a=>String(a.id)===String(id));if(!x)return;const {error}=await db.from("exams").update({is_active:!x.is_active}).eq("id",id);if(error){msg("examStatus",error.message,"error");return;}await loadExams();}
+async function deleteExam(id){if(!confirm("এই Exam মুছে ফেলবেন?"))return;const {error}=await db.from("exams").delete().eq("id",id);if(error){msg("examStatus",error.message,"error");return;}await loadExams();}
+async function loadSettingsForExam(id){const x=exams.find(a=>String(a.id)===String(id));if(!x)return;let s=null;try{const r=await db.from("exam_settings").select("*").eq("exam_id",id).maybeSingle();if(!r.error)s=r.data;}catch(e){}s=s||x;$("totalMarks").value=s.total_marks??"";$("passMark").value=s.pass_mark??"";$("duration").value=s.duration_minutes??20;$("marksPerQuestion").value=s.marks_per_question??1;$("negativeMark").value=s.negative_mark??0;$("examDate").value=s.exam_date??"";$("startTime").value=s.start_time??"";$("endTime").value=s.end_time??"";$("showAnswers").checked=s.show_answers!==false;$("randomQuestions").checked=!!s.random_questions;$("randomOptions").checked=!!s.random_options;}
+async function saveSettings(){const id=$("settingsExam").value;if(!id){msg("settingsStatus","Exam নির্বাচন করুন","error");return;}const values={total_marks:Number($("totalMarks").value)||0,pass_mark:Number($("passMark").value)||0,duration_minutes:Number($("duration").value)||20,marks_per_question:Number($("marksPerQuestion").value)||1,negative_mark:Number($("negativeMark").value)||0,exam_date:$("examDate").value||null,start_time:$("startTime").value||null,end_time:$("endTime").value||null,show_answers:$("showAnswers").checked,random_questions:$("randomQuestions").checked,random_options:$("randomOptions").checked};let r=await db.from("exam_settings").upsert({exam_id:id,...values});if(r.error){const r2=await db.from("exams").update(values).eq("id",id);if(r2.error){msg("settingsStatus",r2.error.message,"error");return;}}msg("settingsStatus","Settings সংরক্ষণ হয়েছে","success");await loadExams();}
+function questionPayload(prefix){return {category:$(prefix+"Category").value,exam_id:$(prefix+"Exam").value,question:$(prefix+"Question").value.trim(),option_a:$(prefix+"A").value.trim(),option_b:$(prefix+"B").value.trim(),option_c:$(prefix+"C").value.trim(),option_d:$(prefix+"D").value.trim(),correct_answer:$(prefix+"Correct").value,explanation:$(prefix+"Explanation").value.trim()};}
+async function insertQuestion(p){
+  const modern={category:p.category,exam_id:p.exam_id||null,question:p.question,option_a:p.option_a,option_b:p.option_b,option_c:p.option_c,option_d:p.option_d,correct_answer:p.correct_answer,explanation:p.explanation};
+  let r=await db.from("questions").insert(modern);
+  if(r.error&&/question|correct_answer|column/i.test(r.error.message)){
+    const legacy={category:p.category,exam_id:p.exam_id||null,question_text:p.question,option_a:p.option_a,option_b:p.option_b,option_c:p.option_c,option_d:p.option_d,correct_option:p.correct_answer,explanation:p.explanation};
+    r=await db.from("questions").insert(legacy);
+    if(r.error&&/explanation/i.test(r.error.message)){const {explanation,...old}=legacy;r=await db.from("questions").insert(old);}
+  } else if(r.error&&/explanation/i.test(r.error.message)){const {explanation,...old}=modern;r=await db.from("questions").insert(old);}
+  return r;
 }
-function fillCategory(id,all=true){
- const e=$(id); if(!e)return;
- const actual=[...new Set(questions.map(q=>canonicalCat(q.category)).filter(Boolean))];
- const list=[...CATEGORIES,...actual.filter(c=>!CATEGORIES.includes(c))];
- e.innerHTML=(all?'<option value="">সব Category</option>':'<option value="">Category নির্বাচন করুন</option>')+list.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join("");
-}
-function fillExam(id,allLabel="Exam নির্বাচন করুন"){
- const e=$(id); if(!e)return;
- e.innerHTML=`<option value="">${allLabel}</option>`+exams.map(x=>`<option value="${x.id}">${safe(x.title)}</option>`).join("");
-}
-function fillAllSelects(){
- if($('distCategory')) $('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join("");
- ["settingsExam","manualExam","bulkExam","editExam","paperExam","answerExam"].forEach(id=>fillExam(id));
- fillExam("bankExam","সব পরীক্ষা"); fillExam("resultExam","সব পরীক্ষা");
- fillCategory("manualCategory",false); fillCategory("editCategory",false); fillCategory("bankCategory",true);
-}
-async function session(){
- const {data}=await db.auth.getSession();
- if(data.session){$("loginView").classList.add("hidden");$("app").classList.remove("hidden");$("adminEmail").textContent=data.session.user.email||"";await loadAll();}
-}
-$("loginBtn").onclick=async()=>{
- const email=$("email").value.trim(),password=$("password").value;
- if(!email||!password){msg("loginMsg","Email ও Password দিন","error");return}
- const {error}=await db.auth.signInWithPassword({email,password});
- if(error)msg("loginMsg",error.message,"error");else session();
-};
-$("logoutBtn").onclick=async()=>{await db.auth.signOut();location.reload()};
-$("menuBtn").onclick=()=>{$("menuPanel").classList.toggle("hidden")};
-document.querySelectorAll(".menuPanel button[data-view]").forEach(b=>b.onclick=()=>{showView(b.dataset.view);$("menuPanel").classList.add("hidden")});
-document.addEventListener("click",e=>{if(!e.target.closest(".menu")) $("menuPanel").classList.add("hidden")});
-function showView(v){
- document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
- $("view-"+v).classList.add("active");
- if(v==="bank")renderBank(); if(v==="results")renderResults(); if(v==="links")renderLinks(); if(v==="settings")loadSettings(); if(v==="papers"||v==="answers"){}
-}
-
-async function loadAll(){await loadExams();await loadQuestions();await loadResults();fillAllSelects();renderLinks();renderBank();renderResults();loadSettings();}
-async function loadExams(){
- const {data,error}=await db.from("exams").select("*").order("created_at",{ascending:false});
- if(error){msg("examMsg",error.message,"error");return} exams=data||[];$("examCount").textContent=exams.length;fillAllSelects();renderExams();renderLinks();
-}
-function examLink(id){return new URL("index.html?exam="+encodeURIComponent(id), location.href).href}
-function renderExams(){
- $("examTable").innerHTML=exams.map(e=>`<tr><td><b>${safe(e.title)}</b></td><td>${safe(e.duration_minutes||20)} মিনিট</td><td><span class="badge ${e.is_active?"activeBadge":"closedBadge"}">${e.is_active?"Active":"Closed"}</span></td><td><button class="light" onclick="copyLink('${e.id}')">Copy</button></td><td><div class="actions"><button onclick="toggleExam('${e.id}')">${e.is_active?"Close":"Open"}</button><button class="danger" onclick="deleteExam('${e.id}')">Delete</button></div></td></tr>`).join("");
-}
-$("createExamBtn").onclick=async()=>{
- const title=$("examTitle").value.trim();if(!title){msg("examMsg","Exam-এর নাম দিন","error");return}
- const {error}=await db.from("exams").insert({title,is_active:true,duration_minutes:20});
- if(error)msg("examMsg",error.message,"error");else{$("examTitle").value="";msg("examMsg","Exam তৈরি হয়েছে","success");await loadExams()}
-};
-async function toggleExam(id){const e=exams.find(x=>String(x.id)===String(id));if(!e)return;const {error}=await db.from("exams").update({is_active:!e.is_active}).eq("id",id);if(error)msg("examMsg",error.message,"error");else loadExams()}
-async function deleteExam(id){if(!confirm("এই Exam এবং এর প্রশ্নগুলো মুছে ফেলবেন?"))return;const {error}=await db.from("exams").delete().eq("id",id);if(error)msg("examMsg",error.message,"error");else loadAll()}
-async function copyLink(id){await navigator.clipboard.writeText(examLink(id));alert("Exam link copied")}
-
-async function loadSettings(){
- const id=$('settingsExam').value;
- if(!id){$('distribution').innerHTML='';return}
- const ex=exams.find(e=>String(e.id)===String(id));
- let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
- if(r.error){console.warn('exam_settings unavailable; using exam defaults',r.error.message)}
- const s=r.data||{};
- $('totalQuestions').value=s.total_questions??questions.filter(q=>String(q.exam_id)===String(id)).length;
- $('totalMarks').value=s.total_marks??'';
- $('passMark').value=s.pass_mark??'';
- $('duration').value=s.duration_minutes??ex?.duration_minutes??20;
- $('marksPerQuestion').value=s.marks_per_question??1;
- $('negativeMark').value=s.negative_mark??0;
- $('examDate').value=s.exam_date??'';
- $('startTime').value=s.start_time??'';
- $('endTime').value=s.end_time??'';
- $('showAnswers').checked=!!s.show_answers;
- $('randomQuestions').checked=!!s.random_questions;
- $('randomOptions').checked=!!s.random_options;
- renderDistribution();
-}
-async function renderDistribution(){
- const id=$('settingsExam').value;if(!id)return;
- const r=await db.from('exam_category_settings').select('*').eq('exam_id',id).order('category');
- if(r.error){console.warn('exam_category_settings unavailable; showing no distribution',r.error.message)}
- const rows=r.data||[];
- $('distribution').innerHTML=rows.map(x=>`<tr><td>${safe(x.category)}</td><td>${bn(x.question_count)}</td><td><button class="danger" onclick="deleteDist('${safe(x.category)}')">Delete</button></td></tr>`).join('');
-}
-async function saveDistribution(){
- const exam_id=$('settingsExam').value,category=$('distCategory').value,count=Number($('distCount').value);
- if(!exam_id||!category||count<0){msg('settingsMsg','Exam, Category ও Question Count দিন','error');return}
- const r=await db.from('exam_category_settings').upsert({exam_id,category,question_count:count},{onConflict:'exam_id,category'});
- if(r.error)msg('settingsMsg',r.error.message,'error');else{msg('settingsMsg','Category distribution সংরক্ষণ হয়েছে','success');$('distCount').value='';renderDistribution()}
-}
-async function deleteDist(cat){const id=$('settingsExam').value;if(!id)return;const r=await db.from('exam_category_settings').delete().eq('exam_id',id).eq('category',cat);if(r.error)alert(r.error.message);else renderDistribution()}
-async function saveSettings(){
- const id=$('settingsExam').value;if(!id){msg('settingsMsg','Exam নির্বাচন করুন','error');return}
- const v={exam_id:id,total_questions:Number($('totalQuestions').value)||0,total_marks:Number($('totalMarks').value)||0,pass_mark:Number($('passMark').value)||0,duration_minutes:Number($('duration').value)||20,marks_per_question:Number($('marksPerQuestion').value)||1,negative_mark:Number($('negativeMark').value)||0,exam_date:$('examDate').value||null,start_time:$('startTime').value||null,end_time:$('endTime').value||null,show_answers:$('showAnswers').checked,random_questions:$('randomQuestions').checked,random_options:$('randomOptions').checked};
- const r=await db.from('exam_settings').upsert(v,{onConflict:'exam_id'});
- if(r.error){msg('settingsMsg',r.error.message,'error');return}
- const e=await db.from('exams').update({duration_minutes:v.duration_minutes}).eq('id',id);
- if(e.error){msg('settingsMsg',e.error.message,'error');return}
- msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে','success');await loadExams();loadSettings();
-}
-$("settingsExam").onchange=loadSettings;
-$('saveDistBtn').onclick=saveDistribution;
-$('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option>${safe(c)}</option>`).join('');
-$("saveSettingsBtn").onclick=async()=>{
- const id=$("settingsExam").value;if(!id){msg("settingsMsg","Exam নির্বাচন করুন","error");return}
- const duration=Number($("duration").value)||20;const {error}=await db.from("exams").update({duration_minutes:duration}).eq("id",id);
- if(error)msg("settingsMsg",error.message,"error");else{msg("settingsMsg","Duration সংরক্ষণ হয়েছে","success");await loadExams()}
-};
-
+async function findDuplicates(text,excludeId=null){const t=String(text||"").trim().toLowerCase().replace(/[^\u0980-\u09ffa-z0-9]+/g,"");if(!t)return [];return questions.filter(q=>q.id!=excludeId).map(q=>{const qt=String(q.question||q.question_text||"").toLowerCase().replace(/[^\u0980-\u09ffa-z0-9]+/g,"");let score=0;if(qt===t)score=1;else{const A=new Set(t),B=new Set(qt);let n=0;for(const c of A)if(B.has(c))n++;score=n/Math.max(A.size,B.size,1);}return {q,score};}).filter(x=>x.score>=.72).sort((a,b)=>b.score-a.score).slice(0,5);}
+async function saveQuestion(){const p=questionPayload("");if(!p.category||!p.exam_id||!p.question||!p.option_a||!p.option_b||!p.option_c||!p.option_d||!p.correct_answer){msg("questionStatus","সব তথ্য পূরণ করুন","error");return;}const ds=await findDuplicates(p.question);if(ds.length&&ds[0].score>=.9){const d=ds[0].q;if(!confirm("এই প্রশ্নটি Question Bank-এ আগে থেকেই আছে। একই প্রশ্ন আবার database-এ রাখবেন? OK = রাখব, Cancel = বাদ"))return;}const r=await insertQuestion(p);if(r.error){msg("questionStatus",r.error.message,"error");return;}msg("questionStatus","Question সংরক্ষণ হয়েছে","success");["question","optionA","optionB","optionC","optionD","explanation"].forEach(id=>$(id).value="");$("correctAnswer").value="";await loadQuestions();}
 async function loadQuestions(){
- const {data,error}=await db.from("questions").select("*, exams(title)").order("question_order",{ascending:true});
- if(error){console.error(error);msg("manualMsg",error.message,"error");return}
- questions=(data||[]).map(q=>({...q,category:normCat(q.category)}));$("questionCount").textContent=questions.length;renderBank();loadSettings();
+  let r=await db.from("questions").select("*, exams(title)").order("question_order",{ascending:true});
+  if(r.error){r=await db.from("questions").select("*").order("question_order",{ascending:true});}
+  if(r.error){msg("bankStatus",r.error.message,"error");return;}
+  questions=r.data||[];$("questionCount").textContent=questions.length;renderBank();
 }
-$("manualAddBtn").onclick=()=>{$("manualBox").classList.remove("hidden");$("bulkBox").classList.add("hidden")};
-$("bulkUploadBtn").onclick=()=>{$("bulkBox").classList.remove("hidden");$("manualBox").classList.add("hidden")};
-$("saveQuestionBtn").onclick=async()=>{
- const row={exam_id:$("manualExam").value,category:normCat($("manualCategory").value),question_text:$("qText").value.trim(),option_a:$("optA").value.trim(),option_b:$("optB").value.trim(),option_c:$("optC").value.trim(),option_d:$("optD").value.trim(),correct_option:$("correct").value,question_order:questions.filter(q=>String(q.exam_id)===String($("manualExam").value)).length+1};
- if(!row.exam_id||!row.category||!row.question_text||!row.option_a||!row.option_b||!row.option_c||!row.option_d||!row.correct_option){msg("manualMsg","সব তথ্য পূরণ করুন","error");return}
- const {error}=await db.from("questions").insert(row);if(error)msg("manualMsg",error.message,"error");else{msg("manualMsg","Question সংরক্ষণ হয়েছে","success");["qText","optA","optB","optC","optD"].forEach(id=>$(id).value="");$("correct").value="";await loadQuestions()}
-};
+function renderBank(){const cat=$("filterCategory").value,exam=$("filterExam").value,search=$("questionSearch").value.trim().toLowerCase();const arr=questions.filter(q=>(!cat||q.category===cat)&&(!exam||String(q.exam_id)===String(exam))&&(!search||String(q.question||q.question_text||"").toLowerCase().includes(search)));$("questionBank").innerHTML=arr.map((q,i)=>{const qt=q.question||q.question_text||"";const oa=q.option_a||"",ob=q.option_b||"",oc=q.option_c||"",od=q.option_d||"";const ca=q.correct_answer||q.correct_option||"";return `<div class="qcard"><span class="chip">${safe(q.category||"")}</span><span class="chip">${safe(q.exams?.title||"")}</span><div><b>${i+1}. ${safe(qt)}</b></div><div class="option">ক) ${safe(oa)}</div><div class="option">খ) ${safe(ob)}</div><div class="option">গ) ${safe(oc)}</div><div class="option">ঘ) ${safe(od)}</div><div><b>সঠিক উত্তর:</b> ${safe(LETTERS[ca]||ca)}</div>${q.explanation?`<div class="paperbox"><b>ব্যাখ্যা:</b><br>${safe(q.explanation)}</div>`:""}<div class="actions"><button onclick="openEdit('${q.id}')">✏️ প্রশ্ন এডিট করুন</button><button class="green" onclick="createFromQuestion('${q.id}')">➕ এই প্রশ্ন থেকে নতুন প্রশ্ন</button><button class="danger" onclick="deleteQuestion('${q.id}')">🗑️ মুছুন</button></div></div>`}).join("")||'<div class="muted">কোনো প্রশ্ন পাওয়া যায়নি।</div>';}
+function openEdit(id){const q=questions.find(x=>String(x.id)===String(id));if(!q)return;$("editId").value=q.id;$("editCategory").value=q.category||"";$("editExam").value=q.exam_id||"";$("editQuestion").value=q.question||q.question_text||"";$("editA").value=q.option_a||"";$("editB").value=q.option_b||"";$("editC").value=q.option_c||"";$("editD").value=q.option_d||"";$("editCorrect").value=q.correct_answer||q.correct_option||"A";$("editExplanation").value=q.explanation||"";$("editModal").classList.remove("hidden");}
+async function updateQuestion(){const id=$("editId").value,p={category:$("editCategory").value,exam_id:$("editExam").value,question:$("editQuestion").value.trim(),option_a:$("editA").value.trim(),option_b:$("editB").value.trim(),option_c:$("editC").value.trim(),option_d:$("editD").value.trim(),correct_answer:$("editCorrect").value,explanation:$("editExplanation").value.trim()};let r=await db.from("questions").update(p).eq("id",id);if(r.error&&/explanation/i.test(r.error.message)){const {explanation,...old}=p;r=await db.from("questions").update(old).eq("id",id);}if(r.error){alert(r.error.message);return;}$("editModal").classList.add("hidden");await loadQuestions();}
+function createFromQuestion(id){const q=questions.find(x=>String(x.id)===String(id));if(!q)return;$("manualCategory").value=q.category||"";$("manualExam").value=q.exam_id||"";$("question").value=q.question||q.question_text||"";$("optionA").value=q.option_a||"";$("optionB").value=q.option_b||"";$("optionC").value=q.option_c||"";$("optionD").value=q.option_d||"";$("correctAnswer").value=q.correct_answer||q.correct_option||"A";$("explanation").value=q.explanation||"";window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"});}
+async function deleteQuestion(id){if(!confirm("এই প্রশ্নটি মুছে ফেলবেন?"))return;const {error}=await db.from("questions").delete().eq("id",id);if(error){alert(error.message);return;}await loadQuestions();}
+function parseAnswer(v){v=String(v??"").trim();return ({"ক":"A","খ":"B","গ":"C","ঘ":"D"}[v]||v.toUpperCase());}
+async function previewFile(){const f=$("fileInput").files[0];if(!f){msg("uploadStatus","Excel বা CSV ফাইল নির্বাচন করুন","error");return;}if(!$("bulkExam").value){msg("uploadStatus","Exam নির্বাচন করুন","error");return;}try{const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});const raw=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});const key=s=>String(s).toLowerCase().replace(/[ _\-]/g,"");const get=(r,n)=>{for(const a of n){const t=key(a),hit=Object.entries(r).find(([h])=>key(h)===t);if(hit)return String(hit[1]??"").trim();}return "";};uploadRows=raw.map(r=>({question_order:get(r,["question_order","ক্রম"]),category:$("bulkCategory").value||get(r,["category","ক্যাটাগরি"]),question:get(r,["question","question_text","প্রশ্ন"]),option_a:get(r,["option_a","optiona","option a","ক"]),option_b:get(r,["option_b","optionb","option b","খ"]),option_c:get(r,["option_c","optionc","option c","গ"]),option_d:get(r,["option_d","optiond","option d","ঘ"]),correct_answer:parseAnswer(get(r,["correct_answer","correctanswer","correct answer","সঠিক উত্তর"])),explanation:get(r,["explanation","ব্যাখ্যা"])})).filter(r=>r.question);if(!uploadRows.length){msg("uploadStatus","প্রশ্ন পাওয়া যায়নি","error");return;}const hs=["ক্রম","Category","Question","ক","খ","গ","ঘ","সঠিক উত্তর","ব্যাখ্যা"];$("previewHead").innerHTML="<tr>"+hs.map(h=>`<th>${safe(h)}</th>`).join("")+"</tr>";$("previewBody").innerHTML=uploadRows.slice(0,50).map(r=>`<tr><td>${safe(r.question_order)}</td><td>${safe(r.category)}</td><td>${safe(r.question)}</td><td>${safe(r.option_a)}</td><td>${safe(r.option_b)}</td><td>${safe(r.option_c)}</td><td>${safe(r.option_d)}</td><td>${safe(LETTERS[r.correct_answer]||r.correct_answer)}</td><td>${safe(r.explanation)}</td></tr>`).join("");msg("uploadStatus",`${uploadRows.length}টি প্রশ্ন পাওয়া গেছে। এখন Upload চাপুন।`,"success");}catch(e){msg("uploadStatus","ফাইল পড়তে সমস্যা: "+e.message,"error");}}
+async function confirmUpload(){if(!uploadRows.length){msg("uploadStatus","আগে Preview করুন","error");return;}const examId=$("bulkExam").value;const rows=uploadRows.map((r,i)=>({question_order:Number(r.question_order)||i+1,category:r.category||"সাধারণ",question:r.question,option_a:r.option_a,option_b:r.option_b,option_c:r.option_c,option_d:r.option_d,correct_answer:r.correct_answer,exam_id:examId,explanation:r.explanation}));let r=await db.from("questions").insert(rows);if(r.error&&/explanation/i.test(r.error.message)){const old=rows.map(({explanation,...x})=>x);r=await db.from("questions").insert(old);}if(r.error){msg("uploadStatus",r.error.message,"error");return;}msg("uploadStatus",`${rows.length}টি প্রশ্ন সফলভাবে যোগ হয়েছে।`,"success");uploadRows=[];await loadQuestions();}
+async function loadResults(){const {data,error}=await db.from("exam_attempts").select('id,score,total_questions,submitted_at,exams(title),students(name,facebook_name,district,mobile)').order("submitted_at",{ascending:false});if(error){console.error(error);return;}$("resultTable").innerHTML=(data||[]).map(r=>{const s=r.students||{},pct=r.total_questions?(Number(r.score||0)/Number(r.total_questions)*100).toFixed(2):"0.00";return `<tr><td>${safe(s.name)}</td><td>${safe(s.facebook_name)}</td><td>${safe(s.district)}</td><td>${safe(s.mobile)}</td><td>${safe(r.exams?.title||"")}</td><td>${safe(r.score)}</td><td>${pct}%</td><td>${safe(r.submitted_at)}</td></tr>`}).join("");}
 
-function renderBank(){
- const ex=$("bankExam").value,cat=canonicalCat($("bankCategory").value),s=$("bankSearch").value.trim().toLowerCase();
- const f=questions.filter(q=>(!ex||String(q.exam_id)===String(ex))&&(!cat||canonicalCat(q.category)===cat)&&(!s||String(q.question_text||"").toLowerCase().includes(s)));
- $("bankInfo").textContent=`মোট ${bn(f.length)}টি প্রশ্ন পাওয়া গেছে। ${cat?`বর্তমান Category: ${cat}`:'সব Category'}`;
- const list=$("bankList");
- list.innerHTML=f.map((q,i)=>`<div class="bankItem"><div class="bankTop"><span class="bankNo">প্রশ্ন ${bn(i+1)}</span><span class="bankCat">${safe(canonicalCat(q.category)||'ক্যাটাগরি নেই')}</span><span class="bankExamBadge">${safe(q.exams?.title||'')}</span></div><div class="bankQuestion">${safe(q.question_text)}</div><div class="bankActions"><button class="editMain" onclick="openEdit('${q.id}')">✏️ প্রশ্ন এডিট করুন</button><button class="danger" onclick="deleteQuestion('${q.id}')">🗑️ মুছুন</button></div></div>`).join("");
- renderBankCategories(cat);
-}
-function renderBankCategories(selected=""){
- const box=$("bankCategories"); if(!box)return;
- const counts={};
- questions.forEach(q=>{const c=canonicalCat(q.category)||"ক্যাটাগরি নেই";counts[c]=(counts[c]||0)+1});
- box.innerHTML="";
- const cats=[...CATEGORIES,...Object.keys(counts).filter(c=>c!=="ক্যাটাগরি নেই"&&!CATEGORIES.includes(c))];
- const addBtn=(label,value,count,extra="")=>{const b=document.createElement("button");b.type="button";b.textContent=`${label} (${bn(count)})`;b.className=extra+((value===selected)?" active":"");b.onclick=()=>{ $("bankCategory").value=value; renderBank(); }; box.appendChild(b)};
- addBtn("সব Category","",questions.length,"all ");
- cats.forEach(c=>addBtn(c,c,counts[c]||0));
- if(counts["ক্যাটাগরি নেই"]) addBtn("ক্যাটাগরি নেই","ক্যাটাগরি নেই",counts["ক্যাটাগরি নেই"]);
-}
-$("bankExam").onchange=renderBank;$("bankCategory").onchange=renderBank;$("bankSearch").oninput=renderBank; $("manualBox").classList.add("hidden");$("bulkBox").classList.add("hidden");
+async function loadPaperQuestions(){const examId=$("paperExam").value;if(!examId){msg("paperStatus","Exam নির্বাচন করুন","error");return;}let q=questions.filter(x=>String(x.exam_id)===String(examId));const cat=$("paperCategory").value;if(cat)q=q.filter(x=>x.category===cat);paperQuestions=q;const ex=exams.find(x=>String(x.id)===String(examId));$("paperPreview").innerHTML=`<div class="paperbox"><h2>${safe(ex?.title||"Question Paper")}</h2><div>${q.length}টি প্রশ্ন</div>${q.map((x,i)=>`<div class="qcard"><b>${i+1}. ${safe(x.question||x.question_text||"")}</b><div class="option">ক) ${safe(x.option_a)}</div><div class="option">খ) ${safe(x.option_b)}</div><div class="option">গ) ${safe(x.option_c)}</div><div class="option">ঘ) ${safe(x.option_d)}</div></div>`).join("")}</div>`;msg("paperStatus","প্রশ্নপত্র প্রস্তুত হয়েছে। এখন PDF বা DOCX বাটন চাপুন।","success");}
+function paperHtml(answer){const ex=exams.find(x=>String(x.id)===String($("paperExam").value));const title=safe(ex?.title||"MCQ Exam");let s=`<html><head><meta charset="UTF-8"><style>body{font-family:Arial,'Noto Sans Bengali',sans-serif;font-size:14pt;line-height:1.55;margin:30px}h1{text-align:center;font-size:20pt}.q{margin:0 0 16px}.opt{margin-left:18px} .ans{font-weight:bold}.exp{margin:5px 0 0 18px}</style></head><body><h1>${title}</h1><p><b>${answer?"উত্তরপত্র":"প্রশ্নপত্র"}</b></p>`;paperQuestions.forEach((q,i)=>{s+=`<div class="q"><b>${i+1}. ${safe(q.question||q.question_text||"")}</b><div class="opt">ক) ${safe(q.option_a)}</div><div class="opt">খ) ${safe(q.option_b)}</div><div class="opt">গ) ${safe(q.option_c)}</div><div class="opt">ঘ) ${safe(q.option_d)}</div>`;if(answer)s+=`<div class="ans">সঠিক উত্তর: ${safe(LETTERS[q.correct_answer||q.correct_option]||q.correct_answer||q.correct_option||"")}</div>${q.explanation?`<div class="exp"><b>ব্যাখ্যা:</b> ${safe(q.explanation)}</div>`:""}`;s+=`</div>`});return s+`</body></html>`;}
+function downloadBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
+function exportDocx(answer){if(!paperQuestions.length){msg("paperStatus","আগে প্রশ্নপত্র তৈরি করুন","error");return;}if(typeof htmlDocx==="undefined"){msg("paperStatus","DOCX লাইব্রেরি লোড হয়নি। ইন্টারনেট চালু রেখে আবার চেষ্টা করুন।","error");return;}const html=paperHtml(answer);const blob=htmlDocx.asBlob(html,{orientation:"portrait",margins:{top:720,right:720,bottom:720,left:720}});const ex=exams.find(x=>String(x.id)===String($("paperExam").value));downloadBlob(blob,(ex?.title||"MCQ")+(answer?"_Answer_Paper":"_Question_Paper")+".docx");}
+function exportPdf(answer){if(!paperQuestions.length){msg("paperStatus","আগে প্রশ্নপত্র তৈরি করুন","error");return;}if(typeof html2pdf==="undefined"){msg("paperStatus","PDF লাইব্রেরি লোড হয়নি। ইন্টারনেট চালু রেখে আবার চেষ্টা করুন।","error");return;}const holder=document.createElement("div");holder.innerHTML=paperHtml(answer).replace(/<html>|<\/html>|<head>[\s\S]*?<\/head>|<body>|<\/body>/gi,"");document.body.appendChild(holder);const ex=exams.find(x=>String(x.id)===String($("paperExam").value));html2pdf().set({margin:10,filename:(ex?.title||"MCQ")+(answer?"_Answer_Paper":"_Question_Paper")+".pdf",image:{type:"jpeg",quality:.98},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}}).from(holder).save().finally(()=>holder.remove());}
 
-window.openEdit=id=>{
- const q=questions.find(x=>String(x.id)===String(id));if(!q)return;
- $("editId").value=q.id;$("editExam").value=q.exam_id;$("editCategory").value=q.category||"";$("editText").value=q.question_text||"";$("editA").value=q.option_a||"";$("editB").value=q.option_b||"";$("editC").value=q.option_c||"";$("editD").value=q.option_d||"";$("editCorrect").value=q.correct_option||"A";$("editModal").classList.remove("hidden");
-};
-$("closeModal").onclick=()=>$("editModal").classList.add("hidden");
-$("updateBtn").onclick=async()=>{
- const id=$("editId").value;const updates={exam_id:$("editExam").value,category:normCat($("editCategory").value),question_text:$("editText").value.trim(),option_a:$("editA").value.trim(),option_b:$("editB").value.trim(),option_c:$("editC").value.trim(),option_d:$("editD").value.trim(),correct_option:$("editCorrect").value};
- const {error}=await db.from("questions").update(updates).eq("id",id);if(error)msg("editMsg",error.message,"error");else{$("editModal").classList.add("hidden");await loadQuestions()}
-};
-window.deleteQuestion=async id=>{if(!confirm("এই প্রশ্নটি মুছে ফেলবেন?"))return;const {error}=await db.from("questions").delete().eq("id",id);if(error)alert(error.message);else loadQuestions()};
-
-async function loadResults(){
- const {data,error}=await db.from('exam_attempts').select('id,exam_id,score,total_questions,submitted_at,attempt_date,exams(id,title),students(name,facebook_name,district,mobile)').order('submitted_at',{ascending:false});
- if(error){console.error(error);return}results=data||[];$('resultCount').textContent=results.length;renderResults();
-}
-function renderResults(){
- const ex=$('resultExam').value,s=$('resultSearch').value.trim().toLowerCase();
- let f=results.filter(r=>(!ex||String(r.exam_id)===String(ex))&&(!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s)));
- const groups={};f.forEach(r=>{const k=String(r.exam_id)+'|'+String(r.attempt_date||'');(groups[k]??=[]).push(r)});
- Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)));
- const rank=new Map();Object.values(groups).forEach(a=>{let prev=null,rankNo=0;a.forEach((r,i)=>{if(prev===null||Number(r.score)!==prev)rankNo=i+1;rank.set(r.id,rankNo);prev=Number(r.score)})});
- $('resultTable').innerHTML=f.map(r=>{const pct=r.total_questions?((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2):'0.00';return `<tr><td>${safe(r.students?.name)}</td><td>${safe(r.students?.facebook_name)}</td><td>${safe(r.students?.district)}</td><td>${safe(r.students?.mobile)}</td><td>${safe(r.exams?.title)}</td><td>${safe(r.score)}</td><td>${pct}%</td><td>${bn(rank.get(r.id)||'')}</td><td>${safe(r.submitted_at)}</td></tr>`}).join('');
-}
-$("resultExam").onchange=renderResults;$("resultSearch").oninput=renderResults;
-
-function renderLinks(){$("linksList").innerHTML=exams.map(e=>`<div class="card"><b>${safe(e.title)}</b><div class="small" style="word-break:break-all">${safe(examLink(e.id))}</div><div class="actions"><button onclick="copyLink('${e.id}')">📋 Copy Link</button><button class="light" onclick="window.open('${examLink(e.id)}','_blank')">↗️ Open</button></div></div>`).join("")}
-
-function parseUpload(){
- const file=$("fileInput").files[0];if(!file){msg("uploadMsg","Excel/CSV ফাইল নির্বাচন করুন","error");return}
- if(!$("bulkExam").value){msg("uploadMsg","আগে Target Exam নির্বাচন করুন","error");return}
- const reader=new FileReader();
- reader.onload=e=>{
-  try{
-   const wb=XLSX.read(new Uint8Array(e.target.result),{type:"array"}),sheet=wb.Sheets[wb.SheetNames[0]],raw=XLSX.utils.sheet_to_json(sheet,{defval:""});
-   const norm=v=>String(v??"").trim(), key=s=>String(s).toLowerCase().replace(/[\s_\-]/g,"");
-   const get=(r,names)=>{for(const n of names){const k=key(n);const h=Object.keys(r).find(x=>key(x)===k);if(h!==undefined)return norm(r[h])}return""};
-   uploadRows=raw.map((r,i)=>({question_order:get(r,["question_order","questionorder","ক্রম"])||String(i+1),category:normCat(get(r,["category","ক্যাটাগরি"])),question_text:get(r,["question_text","question","প্রশ্ন"]),option_a:get(r,["option_a","optiona","option a","ক"]),option_b:get(r,["option_b","optionb","option b","খ"]),option_c:get(r,["option_c","optionc","option c","গ"]),option_d:get(r,["option_d","optiond","option d","ঘ"]),correct_option:get(r,["correct_option","correct_answer","correctanswer","সঠিক উত্তর"]).toUpperCase()})).filter(r=>r.question_text);
-   const map={"ক":"A","খ":"B","গ":"C","ঘ":"D"};uploadRows.forEach(r=>r.correct_option=map[r.correct_option]||r.correct_option);
-   if(!uploadRows.length){msg("uploadMsg","প্রশ্নের তথ্য পাওয়া যায়নি","error");return}
-   $("previewHead").innerHTML="<tr>"+["ক্রম","Category","Question","ক","খ","গ","ঘ","Correct"].map(x=>`<th>${x}</th>`).join("")+"</tr>";
-   $("previewBody").innerHTML=uploadRows.slice(0,50).map(r=>`<tr><td>${safe(r.question_order)}</td><td>${safe(r.category)}</td><td>${safe(r.question_text)}</td><td>${safe(r.option_a)}</td><td>${safe(r.option_b)}</td><td>${safe(r.option_c)}</td><td>${safe(r.option_d)}</td><td>${answerBn(r.correct_option)}</td></tr>`).join("");
-   msg("uploadMsg",`${bn(uploadRows.length)}টি প্রশ্ন পাওয়া গেছে। Preview ঠিক থাকলে Upload চাপুন।`,"success");
-  }catch(err){msg("uploadMsg","ফাইল পড়তে সমস্যা: "+err.message,"error")}
- };
- reader.readAsArrayBuffer(file);
-}
-$("previewBtn").onclick=parseUpload;
-$("uploadBtn").onclick=async()=>{
- if(!uploadRows.length){msg("uploadMsg","আগে Preview করুন","error");return}
- const examId=$("bulkExam").value;if(!examId){msg("uploadMsg","Target Exam নির্বাচন করুন","error");return}
- const bad=uploadRows.find(r=>!r.category||!r.option_a||!r.option_b||!r.option_c||!r.option_d||!["A","B","C","D"].includes(r.correct_option));
- if(bad){msg("uploadMsg","Excel-এর Category/Options/Correct Answer পরীক্ষা করুন।","error");return}
- const base=questions.filter(q=>String(q.exam_id)===String(examId)).length;
- const rows=uploadRows.map((r,i)=>({exam_id:examId,category:canonicalCat(r.category),question_text:r.question_text,option_a:r.option_a,option_b:r.option_b,option_c:r.option_c,option_d:r.option_d,correct_option:r.correct_option,question_order:base+i+1}));
- const {error}=await db.from("questions").insert(rows);if(error)msg("uploadMsg","Upload ব্যর্থ: "+error.message,"error");else{msg("uploadMsg",`${bn(rows.length)}টি প্রশ্ন সফলভাবে যোগ হয়েছে।`,"success");uploadRows=[];await loadQuestions()}
-};
-
-async function downloadPaperDocx(answers){
- const id=$(answers?'answerExam':'paperExam').value;if(!id){alert('Exam নির্বাচন করুন');return}
- const D=window.docx;if(!D){alert('DOCX library load হয়নি');return}
- const e=exams.find(x=>String(x.id)===String(id));const qs=questions.filter(q=>String(q.exam_id)===String(id)).sort((a,b)=>(a.question_order||0)-(b.question_order||0));
- const children=[new D.Paragraph({text:String(e?.title||'MCQ Exam'),heading:D.HeadingLevel.HEADING_1}),new D.Paragraph('সময়: '+String(e?.duration_minutes||20)+' মিনিট')];
- qs.forEach((q,i)=>{children.push(new D.Paragraph((i+1)+'. '+String(q.question_text||'')));children.push(new D.Paragraph('ক) '+String(q.option_a||'')));children.push(new D.Paragraph('খ) '+String(q.option_b||'')));children.push(new D.Paragraph('গ) '+String(q.option_c||'')));children.push(new D.Paragraph('ঘ) '+String(q.option_d||'')));if(answers)children.push(new D.Paragraph('সঠিক উত্তর: '+String(answerBn(q.correct_option))));});
- const doc=new D.Document({sections:[{children}]});const blob=await D.Packer.toBlob(doc);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(answers?'answer-paper-':'question-paper-')+id+'.docx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
-function paperHTML(examId,answers=false){
- const e=exams.find(x=>String(x.id)===String(examId));const qs=questions.filter(q=>String(q.exam_id)===String(examId)).sort((a,b)=>(a.question_order||0)-(b.question_order||0));
- if(!e)return"";
- return `<!doctype html><html lang="bn"><head><meta charset="UTF-8"><title>${safe(e.title)}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;padding:28px;line-height:1.65}h1{text-align:center}.q{margin:16px 0}.opts{display:grid;grid-template-columns:1fr 1fr;gap:5px 25px}@media(max-width:650px){.opts{grid-template-columns:1fr}}</style></head><body><h1>${safe(e.title)}</h1><p>সময়: ${safe(e.duration_minutes||20)} মিনিট &nbsp; | &nbsp; মোট প্রশ্ন: ${bn(qs.length)}</p>${qs.map((q,i)=>`<div class="q"><b>${bn(i+1)}. ${safe(q.question_text)}</b><div class="opts"><div>ক) ${safe(q.option_a)}</div><div>খ) ${safe(q.option_b)}</div><div>গ) ${safe(q.option_c)}</div><div>ঘ) ${safe(q.option_d)}</div></div>${answers?`<div><b>সঠিক উত্তর: ${answerBn(q.correct_option)}</b></div>`:""}</div>`).join("")}</body></html>`;
-}
-function printPaper(answers){
- const id=$(answers?"answerExam":"paperExam").value;if(!id){alert("Exam নির্বাচন করুন");return}
- const w=window.open("","_blank");w.document.write(paperHTML(id,answers));w.document.close();w.focus();setTimeout(()=>w.print(),400);
-}
-$("printPaperBtn").onclick=()=>printPaper(false);$("printAnswerBtn").onclick=()=>printPaper(true);$("docxPaperBtn").onclick=()=>downloadPaperDocx(false);$("docxAnswerBtn").onclick=()=>downloadPaperDocx(true);
+$("loginButton").onclick=login;$("logoutButton").onclick=logout;$("createExamButton").onclick=createExam;$("refreshExamsButton").onclick=loadExams;$("saveSettingsButton").onclick=saveSettings;$("saveQuestionButton").onclick=saveQuestion;$("previewButton").onclick=previewFile;$("confirmUploadButton").onclick=confirmUpload;$("refreshQuestionsButton").onclick=loadQuestions;$("refreshResultsButton").onclick=loadResults;$("loadPaperButton").onclick=loadPaperQuestions;$("questionDocxButton").onclick=()=>exportDocx(false);$("answerDocxButton").onclick=()=>exportDocx(true);$("questionPdfButton").onclick=()=>exportPdf(false);$("answerPdfButton").onclick=()=>exportPdf(true);$("updateQuestionButton").onclick=updateQuestion;$("closeEditButton").onclick=()=>$("editModal").classList.add("hidden");$("cloneFromEditButton").onclick=()=>createFromQuestion($("editId").value);$("settingsExam").onchange=e=>loadSettingsForExam(e.target.value);$("filterCategory").onchange=renderBank;$("filterExam").onchange=renderBank;$("questionSearch").oninput=renderBank;
+initCategories();checkSession();
 </script>
-</body>
-</html>
+</body></html>
