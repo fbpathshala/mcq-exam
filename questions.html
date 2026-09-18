@@ -1,0 +1,45 @@
+<!doctype html><html lang="bn"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>📝 Question Management</title><link rel="stylesheet" href="css/common.css"><link rel="stylesheet" href="css/admin.css"><link rel="stylesheet" href="css/forms.css"><link rel="stylesheet" href="css/print.css"><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script></head><body><div class="wrap"><div class="card"><div class="pageHeader"><h1>📝 Question Management</h1><span class="small" id="adminEmail"></span><div class="spacer"></div></div><div class="spacer"><div class="menu"><button id="menuBtn" class="menuBtn">⋮</button><div id="menuPanel" class="menuPanel hidden"><a href="admin.html">🏠 Dashboard</a><a href="exams.html">📋 Exam Management</a><a href="exam-settings.html">⚙️ Exam Settings</a><a href="questions.html">📝 Question Management</a><a href="question-bank.html">🗂️ Question Bank</a><a href="results.html">📊 Results</a><a href="exam-links.html">🔗 Exam Link</a><a href="job-solution-admin.html">💼 Job Solution</a><a href="question-paper.html">📄 Question Paper</a><a href="answer-paper.html">✅ Answer Paper</a><button id="logoutBtn">🚪 Logout</button></div></div></div></div><section id="view-questions" class="view">
+      <div class="card">
+        <h2>📝 Question Management</h2>
+        <div class="actions">
+          <button id="manualAddBtn">➕ Manual Add</button>
+          <button id="bulkUploadBtn" class="light">📥 Excel / CSV Upload</button>
+        </div>
+      </div>
+      <div id="manualBox" class="card hidden" hidden>
+        <h3>Manual Add</h3>
+        <div class="grid">
+          <select id="manualExam"></select><select id="manualCategory"></select>
+        </div>
+        <textarea id="qText" rows="3" placeholder="Question"></textarea>
+        <div class="grid">
+          <input id="optA" placeholder="ক) Option A"><input id="optB" placeholder="খ) Option B">
+          <input id="optC" placeholder="গ) Option C"><input id="optD" placeholder="ঘ) Option D">
+        </div>
+        <select id="correct"><option value="">সঠিক উত্তর</option><option value="A">ক</option><option value="B">খ</option><option value="C">গ</option><option value="D">ঘ</option></select>
+        <textarea id="qExplanation" rows="3" placeholder="ব্যাখ্যা (ঐচ্ছিক)"></textarea>
+        <button id="saveQuestionBtn">Save Question</button>
+        <div id="manualMsg" class="msg"></div>
+      </div>
+      <div id="bulkBox" class="card hidden" hidden>
+        <h3>Excel / CSV Upload</h3>
+        <p class="small">Upload ফাইলে Category প্রতিটি row-তে আগে থেকেই থাকবে। এখানে শুধু Target Exam নির্বাচন করতে হবে।</p>
+        <select id="bulkExam"></select>
+        <input id="fileInput" type="file" accept=".xlsx,.xls,.csv">
+        <div class="actions"><button id="previewBtn">Preview</button><button id="uploadBtn">Upload</button></div>
+        <div id="uploadMsg" class="msg"></div>
+        <div class="tableWrap"><table><thead id="previewHead"></thead><tbody id="previewBody"></tbody></table></div>
+      </div>
+    </section><div id="editModal" class="modal hidden">
+  <div class="modalBox">
+    <h2>✏️ প্রশ্ন এডিট করুন</h2><p class="small">এখান থেকে Category, Exam, প্রশ্ন, চারটি অপশন এবং সঠিক উত্তর পরিবর্তন করতে পারবেন।</p>
+    <input id="editId" type="hidden">
+    <div class="grid"><select id="editExam"></select><select id="editCategory"></select></div>
+    <textarea id="editText" rows="3"></textarea>
+    <textarea id="editExplanation" rows="3" placeholder="ব্যাখ্যা"></textarea>
+    <div class="grid"><input id="editA"><input id="editB"><input id="editC"><input id="editD"></div>
+    <select id="editCorrect"><option value="A">ক</option><option value="B">খ</option><option value="C">গ</option><option value="D">ঘ</option></select>
+    <div class="actions"><button id="updateBtn">💾 পরিবর্তন সংরক্ষণ করুন</button><button id="cloneFromEditBtn" class="light">📋 নতুন প্রশ্ন হিসেবে কপি</button><button id="closeModal" class="secondary">বন্ধ করুন</button></div>
+    <div id="editMsg" class="msg"></div>
+  </div>
+</div></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/supabase.js"></script><script src="js/common.js"></script><script src="js/auth.js"></script><script>document.getElementById("menuBtn").onclick=()=>document.getElementById("menuPanel").classList.toggle("hidden");document.addEventListener("click",e=>{if(!e.target.closest(".menu"))document.getElementById("menuPanel").classList.add("hidden")});</script><script src="js/questions.js"></script></body></html>
