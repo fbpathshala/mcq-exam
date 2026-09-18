@@ -18,6 +18,8 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
 .menuPanel{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .menuPanel button{min-height:48px;text-align:center;border:1px solid #eef0f4}
 .menuPanel button:last-child{grid-column:1/-1}.categoryChips{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.categoryChips button{width:auto;padding:8px 12px;border:1px solid #d0d5dd;background:#fff;color:#172033}.categoryChips button.active{background:var(--primary);color:#fff}.categoryChips .all{font-weight:800}
+.bankSectionLabel{font-weight:800;margin-top:14px}.categoryChips button{min-width:110px}.categoryChips button .count{opacity:.8;margin-left:4px}.bankList{display:grid;gap:10px;margin-top:12px}.bankItem{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.bankTop{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}.bankNo{font-weight:800}.bankCat,.bankExamBadge{display:inline-block;padding:4px 8px;border-radius:999px;background:#f1f5f9;font-size:12px;font-weight:700}.bankQuestion{font-size:16px;line-height:1.6;margin:8px 0}.bankActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.bankActions button{width:auto;min-width:110px}.editMain{background:var(--primary)}
+@media(max-width:650px){.bankItem{padding:12px}.bankQuestion{font-size:15px}.categoryChips button{flex:1 1 calc(50% - 7px);min-width:0}}
 @media(max-width:430px){.menuPanel{grid-template-columns:1fr}.menuPanel button:last-child{grid-column:auto}}
 .sectionTitle{display:flex;align-items:center;gap:8px}.sectionTitle h2{margin:0}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.stat{padding:16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:space-between;min-height:82px}.stat b{font-size:13px;color:var(--muted)}.stat strong{font-size:28px;margin:0}
 .view{display:none}.view.active{display:block}.toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
@@ -153,13 +155,11 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
         <div class="toolbar">
           <select id="bankExam"></select><input id="bankSearch" placeholder="প্রশ্ন খুঁজুন">
         </div>
+        <div class="bankSectionLabel">ক্যাটাগরি অনুযায়ী প্রশ্ন দেখুন</div>
         <div id="bankCategories" class="categoryChips"></div>
         <select id="bankCategory" class="hidden"></select>
         <div id="bankInfo" class="msg"></div>
-        <div class="tableWrap"><table>
-          <thead><tr><th>ক্রম</th><th>Category</th><th>Exam</th><th>Question</th><th>সঠিক</th><th>Actions</th></tr></thead>
-          <tbody id="bankTable"></tbody>
-        </table></div>
+        <div id="bankList" class="bankList"></div>
       </div>
     </section>
 
@@ -187,13 +187,13 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
 
 <div id="editModal" class="modal hidden">
   <div class="modalBox">
-    <h2>✏️ Edit Question</h2>
+    <h2>✏️ প্রশ্ন এডিট করুন</h2><p class="small">এখান থেকে Category, Exam, প্রশ্ন, চারটি অপশন এবং সঠিক উত্তর পরিবর্তন করতে পারবেন।</p>
     <input id="editId" type="hidden">
     <div class="grid"><select id="editExam"></select><select id="editCategory"></select></div>
     <textarea id="editText" rows="3"></textarea>
     <div class="grid"><input id="editA"><input id="editB"><input id="editC"><input id="editD"></div>
     <select id="editCorrect"><option value="A">ক</option><option value="B">খ</option><option value="C">গ</option><option value="D">ঘ</option></select>
-    <div class="actions"><button id="updateBtn">Update</button><button id="closeModal" class="secondary">Close</button></div>
+    <div class="actions"><button id="updateBtn">💾 পরিবর্তন সংরক্ষণ করুন</button><button id="closeModal" class="secondary">বন্ধ করুন</button></div>
     <div id="editMsg" class="msg"></div>
   </div>
 </div>
@@ -342,16 +342,21 @@ $("saveQuestionBtn").onclick=async()=>{
 function renderBank(){
  const ex=$("bankExam").value,cat=canonicalCat($("bankCategory").value),s=$("bankSearch").value.trim().toLowerCase();
  const f=questions.filter(q=>(!ex||String(q.exam_id)===String(ex))&&(!cat||canonicalCat(q.category)===cat)&&(!s||String(q.question_text||"").toLowerCase().includes(s)));
- $("bankInfo").textContent=`মোট ${bn(f.length)}টি প্রশ্ন পাওয়া গেছে।`;
- $("bankTable").innerHTML=f.map((q,i)=>`<tr><td>${bn(i+1)}</td><td>${safe(canonicalCat(q.category))}</td><td>${safe(q.exams?.title||"")}</td><td>${safe(q.question_text)}</td><td>${answerBn(q.correct_option)}</td><td><div class="actions"><button onclick="openEdit('${q.id}')">Edit</button><button class="danger" onclick="deleteQuestion('${q.id}')">Delete</button></div></td></tr>`).join("");
+ $("bankInfo").textContent=`মোট ${bn(f.length)}টি প্রশ্ন পাওয়া গেছে। ${cat?`বর্তমান Category: ${cat}`:'সব Category'}`;
+ const list=$("bankList");
+ list.innerHTML=f.map((q,i)=>`<div class="bankItem"><div class="bankTop"><span class="bankNo">প্রশ্ন ${bn(i+1)}</span><span class="bankCat">${safe(canonicalCat(q.category)||'ক্যাটাগরি নেই')}</span><span class="bankExamBadge">${safe(q.exams?.title||'')}</span></div><div class="bankQuestion">${safe(q.question_text)}</div><div class="bankActions"><button class="editMain" onclick="openEdit('${q.id}')">✏️ প্রশ্ন এডিট করুন</button><button class="danger" onclick="deleteQuestion('${q.id}')">🗑️ মুছুন</button></div></div>`).join("");
  renderBankCategories(cat);
 }
 function renderBankCategories(selected=""){
  const box=$("bankCategories"); if(!box)return;
- const cats=[...new Set(questions.map(q=>canonicalCat(q.category)).filter(Boolean))];
+ const counts={};
+ questions.forEach(q=>{const c=canonicalCat(q.category)||"ক্যাটাগরি নেই";counts[c]=(counts[c]||0)+1});
  box.innerHTML="";
- const all=document.createElement("button"); all.className="all"+(!selected?" active":""); all.textContent="সব Category"; all.onclick=()=>{$("bankCategory").value="";renderBank()}; box.appendChild(all);
- cats.forEach(c=>{const b=document.createElement("button");b.textContent=c;b.className=canonicalCat(c)===selected?"active":"";b.onclick=()=>{$("bankCategory").value=c;renderBank()};box.appendChild(b)});
+ const cats=[...CATEGORIES,...Object.keys(counts).filter(c=>c!=="ক্যাটাগরি নেই"&&!CATEGORIES.includes(c))];
+ const addBtn=(label,value,count,extra="")=>{const b=document.createElement("button");b.type="button";b.textContent=`${label} (${bn(count)})`;b.className=extra+((value===selected)?" active":"");b.onclick=()=>{ $("bankCategory").value=value; renderBank(); }; box.appendChild(b)};
+ addBtn("সব Category","",questions.length,"all ");
+ cats.forEach(c=>addBtn(c,c,counts[c]||0));
+ if(counts["ক্যাটাগরি নেই"]) addBtn("ক্যাটাগরি নেই","ক্যাটাগরি নেই",counts["ক্যাটাগরি নেই"]);
 }
 $("bankExam").onchange=renderBank;$("bankCategory").onchange=renderBank;$("bankSearch").oninput=renderBank; $("manualBox").classList.add("hidden");$("bulkBox").classList.add("hidden");
 
