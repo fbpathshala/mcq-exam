@@ -50,31 +50,68 @@ async function loadExam(){
  try{
   const examId=getExamId(); let q=supabaseClient.from("exams").select("*");
   q=examId?q.eq("id",examId):q.eq("is_active",true).order("created_at",{ascending:false}).limit(1);
-  const {data:exams,error}=await q; if(error)throw error; if(!exams?.length)throw new Error("কোনো সক্রিয়/নির্বাচিত পরীক্ষা পাওয়া যায়নি।"); exam=exams[0];
+  const {data:exams,error}=await q;
+  if(error)throw error;
+  if(!exams?.length)throw new Error("কোনো সক্রিয়/নির্বাচিত পরীক্ষা পাওয়া যায়নি।");
+  exam=exams[0];
   document.getElementById("examTitle").textContent=exam.title;
-  let st=null;
-  try {
-    const r=await supabaseClient.from("exam_settings").select("*").eq("exam_id",exam.id).maybeSingle();
-    if(!r.error) st=r.data;
-    else console.warn("exam_settings unavailable; using exam defaults", r.error.message);
-  } catch(e) { console.warn("exam_settings unavailable; using exam defaults", e); }
-  settings=st||{duration_minutes:exam.duration_minutes||20,total_questions:0,marks_per_question:1,negative_mark:0,total_marks:0,pass_mark:0,show_answers:true,random_questions:false,random_options:false};
-  const {data:qs,error:qe}=await supabaseClient.from("student_questions").select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order").eq("exam_id",exam.id).order("question_order",{ascending:true});
-  if(qe)throw qe; let allQuestions=qs||[];
+
+  // Optional settings: the student page must still work when the optional
+  // settings table has not been created yet. The basic exam duration comes
+  // from public.exams.duration_minutes.
+  settings={
+   duration_minutes:Number(exam.duration_minutes||20),
+   total_questions:0,total_marks:0,pass_mark:0,marks_per_question:1,
+   negative_mark:0,show_answers:true,random_questions:false,random_options:false,
+   exam_date:null,start_time:null,end_time:null
+  };
+  try{
+   const {data:st}=await supabaseClient.from("exam_settings").select("*").eq("exam_id",exam.id).maybeSingle();
+   if(st)settings={...settings,...st};
+  }catch(_){/* optional table */}
+
+  // Student-safe view is preferred when available. If it is not available,
+  // fall back to the existing questions table without requesting correct_option.
+  let qsResult=await supabaseClient.from("student_questions")
+    .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order")
+    .eq("exam_id",exam.id).order("question_order",{ascending:true});
+  if(qsResult.error){
+   qsResult=await supabaseClient.from("questions")
+    .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order")
+    .eq("exam_id",exam.id).order("question_order",{ascending:true});
+  }
+  if(qsResult.error)throw qsResult.error;
+  let allQuestions=qsResult.data||[];
   if(!allQuestions.length)throw new Error("এই পরীক্ষায় কোনো প্রশ্ন নেই।");
-  const {data:catSettings,error:cse}=await supabaseClient.from("exam_category_settings").select("category,question_count").eq("exam_id",exam.id);
-  if(cse && cse.code!=="42501")throw cse;
+
+  // Category distribution is optional; if the table is unavailable, simply
+  // use all questions for the exam.
+  let catSettings=null;
+  try{
+   const r=await supabaseClient.from("exam_category_settings").select("category,question_count").eq("exam_id",exam.id);
+   if(!r.error)catSettings=r.data||[];
+  }catch(_){/* optional table */}
   questions=[];
   if(catSettings?.length){
-    for(const cs of catSettings){const pool=allQuestions.filter(q=>q.category===cs.category);shuffle(pool);questions.push(...pool.slice(0,Number(cs.question_count||0)));}
+   for(const cs of catSettings){
+    const pool=allQuestions.filter(q=>String(q.category||"").trim()===String(cs.category||"").trim());
+    shuffle(pool);questions.push(...pool.slice(0,Number(cs.question_count||0)));
+   }
+   if(!questions.length)questions=allQuestions.slice();
   }else questions=allQuestions.slice();
+
   if(settings.random_questions)shuffle(questions);
-  if(settings.total_questions>0)questions=questions.slice(0,Number(settings.total_questions));
+  if(Number(settings.total_questions||0)>0)questions=questions.slice(0,Number(settings.total_questions));
   optionMaps={};
   questions.forEach(q=>{let arr=["A","B","C","D"];if(settings.random_options)shuffle(arr);optionMaps[q.id]=arr;});
   document.getElementById("examInfo").textContent=`${exam.title} — ${bn(questions.length)}টি প্রশ্ন | সময়: ${bn(Number(settings.duration_minutes||20))} মিনিট`;
-  status.className="status success";status.textContent="পরীক্ষা শুরু করার জন্য তথ্য পূরণ করুন।";
- }catch(e){console.error(e);status.className="status error";status.textContent="সমস্যা হয়েছে: "+e.message+" (প্রয়োজনে final SQL চালাতে হবে)"}
+  status.className="status success";
+  status.textContent="পরীক্ষা শুরু করার জন্য তথ্য পূরণ করুন।";
+ }catch(e){
+  console.error(e);
+  status.className="status error";
+  status.textContent="সমস্যা হয়েছে: "+e.message;
+ }
 }
 async function startExam(){
  const name=document.getElementById("studentName").value.trim(),facebookName=document.getElementById("facebookName").value.trim(),district=document.getElementById("district").value,mobile=document.getElementById("mobile").value.replace(/\D/g,"").trim();
@@ -97,7 +134,72 @@ function nextQuestion(){if(currentQuestion<questions.length-1){currentQuestion++
 function previousQuestion(){if(currentQuestion>0){currentQuestion--;renderQuestion()}}
 function startTimer(){updateTimer();clearInterval(timerInterval);timerInterval=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInterval);submitExam(true)}},1000)}
 function updateTimer(){const m=Math.floor(Math.max(0,timeLeft)/60),s=Math.max(0,timeLeft)%60;document.getElementById("timer").textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}
-async function submitExam(autoSubmit=false){if(!autoSubmit&&!confirm("আপনি কি পরীক্ষা জমা দিতে চান?"))return;if(!exam||!student.mobile)return;clearInterval(timerInterval);const btn=document.getElementById("submitBtn");btn.disabled=true;try{const payload=Object.fromEntries(Object.entries(answers).map(([k,v])=>[String(k),v]));const {data,error}=await supabaseClient.rpc("submit_exam",{p_exam_id:exam.id,p_name:student.name,p_facebook_name:student.facebookName,p_district:student.district,p_mobile:student.mobile,p_device_token:deviceToken,p_answers:payload});if(error)throw error;if(!data?.success)throw new Error(data?.message||"পরীক্ষা জমা দেওয়া যায়নি।");resultData=data;showResult(autoSubmit)}catch(e){console.error(e);btn.disabled=false;if(e.code==="23505")alert("এই পরীক্ষাটি আজ ইতিমধ্যে দেওয়া হয়েছে।");else alert("ফলাফল সংরক্ষণ করতে সমস্যা হয়েছে: "+e.message)}}
+async function submitExam(autoSubmit=false){
+ if(!autoSubmit&&!confirm("আপনি কি পরীক্ষা জমা দিতে চান?"))return;
+ if(!exam||!student.mobile)return;
+ clearInterval(timerInterval);
+ const btn=document.getElementById("submitBtn");btn.disabled=true;
+ const payload=Object.fromEntries(Object.entries(answers).map(([k,v])=>[String(k),v]));
+ try{
+  // Preferred secure server-side submission.
+  const rpc=await supabaseClient.rpc("submit_exam",{
+   p_exam_id:exam.id,p_name:student.name,p_facebook_name:student.facebookName,
+   p_district:student.district,p_mobile:student.mobile,p_device_token:deviceToken,p_answers:payload
+  });
+  if(!rpc.error){
+   if(!rpc.data?.success)throw new Error(rpc.data?.message||"পরীক্ষা জমা দেওয়া যায়নি।");
+   resultData=rpc.data;showResult(autoSubmit);return;
+  }
+
+  // Compatibility fallback for a database where the newer RPC has not yet
+  // been installed. This keeps the already-created basic MCQ database usable.
+  const full=await supabaseClient.from("questions")
+   .select("id,question_text,option_a,option_b,option_c,option_d,correct_option")
+   .eq("exam_id",exam.id).order("question_order",{ascending:true});
+  if(full.error)throw rpc.error;
+  const correctRows=full.data||[];
+  const marksPer=Number(settings?.marks_per_question||1),negative=Number(settings?.negative_mark||0);
+  let score=0,correctCount=0;
+  const review=[];
+  for(const q of correctRows){
+   const selected=String(payload[q.id]||"").toUpperCase();
+   const ok=!!selected&&selected===String(q.correct_option||"").toUpperCase();
+   const marks=selected?(ok?marksPer:-negative):0;
+   score+=marks;if(ok)correctCount++;
+   review.push({question_text:q.question_text,selected_option:selected||null,
+    selected_text:selected?(q["option_"+selected.toLowerCase()]||""):null,
+    correct_option:String(q.correct_option||"").toUpperCase(),
+    correct_text:q["option_"+String(q.correct_option||"").toLowerCase()]||"",is_correct:ok});
+  }
+  const today=getDhakaDate();
+  const sid="MOBILE-"+student.mobile;
+  let sr=await supabaseClient.from("students").select("id").eq("student_id",sid).maybeSingle();
+  let studentId=sr.data?.id;
+  if(!studentId){
+   const ins=await supabaseClient.from("students").insert({student_id:sid,name:student.name,facebook_name:student.facebookName,district:student.district,mobile:student.mobile}).select("id").single();
+   if(ins.error)throw ins.error;studentId=ins.data.id;
+  }else{
+   const up=await supabaseClient.from("students").update({name:student.name,facebook_name:student.facebookName,district:student.district,mobile:student.mobile}).eq("id",studentId);
+   if(up.error)throw up.error;
+  }
+  const dup=await supabaseClient.from("exam_attempts").select("id").eq("exam_id",exam.id).eq("student_id",studentId).eq("attempt_date",today).maybeSingle();
+  if(dup.data)throw new Error("এই পরীক্ষাটি আজ ইতিমধ্যে দেওয়া হয়েছে।");
+  const insAttempt=await supabaseClient.from("exam_attempts").insert({exam_id:exam.id,student_id:studentId,score,total_questions:correctRows.length,submitted_at:new Date().toISOString(),attempt_date:today,device_token:deviceToken}).select("id").single();
+  if(insAttempt.error)throw insAttempt.error;
+  const answerRows=correctRows.map(q=>{const selected=String(payload[q.id]||"").toUpperCase();const ok=!!selected&&selected===String(q.correct_option||"").toUpperCase();return {attempt_id:insAttempt.data.id,question_id:q.id,selected_option:selected||null,is_correct:ok};});
+  if(answerRows.length){const ar=await supabaseClient.from("attempt_answers").insert(answerRows);if(ar.error)throw ar.error;}
+  let rank=1,rankTotal=1;
+  const rr=await supabaseClient.from("exam_attempts").select("id,score").eq("exam_id",exam.id).eq("attempt_date",today).order("score",{ascending:false});
+  if(!rr.error&&rr.data?.length){rankTotal=rr.data.length;const idx=rr.data.findIndex(x=>String(x.id)===String(insAttempt.data.id));rank=idx>=0?idx+1:rankTotal;}
+  const totalMarks=Number(settings?.total_marks||0)||correctRows.length*marksPer;
+  resultData={success:true,score,total_marks:totalMarks,total_questions:correctRows.length,percentage:totalMarks>0?(score/totalMarks)*100:0,pass_mark:Number(settings?.pass_mark||0),rank,rank_total:rankTotal,review};
+  showResult(autoSubmit);
+ }catch(e){
+  console.error(e);btn.disabled=false;
+  if(e.code==="23505")alert("এই পরীক্ষাটি আজ ইতিমধ্যে দেওয়া হয়েছে।");
+  else alert("ফলাফল সংরক্ষণ করতে সমস্যা হয়েছে: "+(e.message||"অজানা সমস্যা"));
+ }
+}
 function showResult(autoSubmit){document.getElementById("examPage").classList.add("hidden");document.getElementById("resultPage").classList.remove("hidden");const total=Number(resultData.total_marks||0),score=Number(resultData.score||0),pct=Number(resultData.percentage||0);document.getElementById("score").textContent=score+" / "+total;document.getElementById("marks").textContent=score;document.getElementById("percentage").textContent=Math.round(pct)+"%";document.getElementById("rank").textContent=resultData.rank?bn(resultData.rank):"—";document.getElementById("rankTotal").textContent=resultData.rank_total?bn(resultData.rank_total):"—";document.getElementById("resultMessage").textContent=autoSubmit?"⏰ সময় শেষ হওয়ায় পরীক্ষা জমা হয়েছে।":"🎉 আপনার পরীক্ষা সফলভাবে জমা হয়েছে।";const pass=Number(resultData.pass_mark||0)<=score;document.getElementById("passStatus").textContent=resultData.pass_mark?((pass?"✅ উত্তীর্ণ":"❌ অনুত্তীর্ণ")+` — পাস নম্বর ${resultData.pass_mark}`):"";if(settings?.show_answers!==false&&Array.isArray(resultData.review))renderReview(resultData.review)}
 function renderReview(items){const box=document.getElementById("review");box.classList.remove("hidden");box.innerHTML="<h3>উত্তর পর্যালোচনা</h3>";items.forEach((r,i)=>{const ok=r.is_correct;const div=document.createElement("div");div.className="review-item";div.innerHTML=`<strong>${bn(i+1)}. ${escapeHtml(r.question_text||"")}</strong><p>আপনার উত্তর: <span class="${ok?"correct":"wrong"}">${r.selected_option?optionLetters[r.selected_option]+". "+escapeHtml(r.selected_text||""):"দেওয়া হয়নি"}</span></p><p>সঠিক উত্তর: <span class="correct">${optionLetters[r.correct_option]}. ${escapeHtml(r.correct_text||"")}</span></p>`;box.appendChild(div)})}
 renderDistricts();loadExam();
