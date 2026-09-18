@@ -53,7 +53,7 @@ async function loadExam(){
   const {data:exams,error}=await q; if(error)throw error; if(!exams?.length)throw new Error("কোনো সক্রিয়/নির্বাচিত পরীক্ষা পাওয়া যায়নি।"); exam=exams[0];
   document.getElementById("examTitle").textContent=exam.title;
   const {data:st,error:se}=await supabaseClient.from("exam_settings").select("*").eq("exam_id",exam.id).maybeSingle();
-  settings=st||{duration_minutes:exam.duration_minutes||20,total_questions:0,marks_per_question:1,negative_mark:0,total_marks:0,pass_mark:0,show_answers:true,random_questions:false,random_options:false};
+  settings=st||{duration_minutes:exam.duration_minutes||20,total_questions:0,marks_per_question:1,negative_mark:0,total_marks:0,pass_mark:0,show_answers:true,random_questions:false,random_options:false,examiner_name:""};
   if(se) console.warn("exam_settings unavailable; using exam defaults:",se.message);
   let qsResult=await supabaseClient.from("student_questions").select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order").eq("exam_id",exam.id).order("question_order",{ascending:true});
   if(qsResult.error){
@@ -72,7 +72,7 @@ async function loadExam(){
   if(settings.total_questions>0)questions=questions.slice(0,Number(settings.total_questions));
   optionMaps={};
   questions.forEach(q=>{let arr=["A","B","C","D"];if(settings.random_options)shuffle(arr);optionMaps[q.id]=arr;});
-  document.getElementById("examInfo").textContent=`${exam.title} — ${bn(questions.length)}টি প্রশ্ন | সময়: ${bn(Number(settings.duration_minutes||20))} মিনিট`;
+  document.getElementById("examInfo").textContent=`${exam.title}${settings.examiner_name?` — পরীক্ষক: ${settings.examiner_name}`:""} — ${bn(questions.length)}টি প্রশ্ন | সময়: ${bn(Number(settings.duration_minutes||20))} মিনিট`;
   status.className="status success";status.textContent="পরীক্ষা শুরু করার জন্য তথ্য পূরণ করুন।";
  }catch(e){console.error(e);status.className="status error";status.textContent="সমস্যা হয়েছে: "+e.message+" (প্রয়োজনে final SQL চালাতে হবে)"}
 }
@@ -86,8 +86,11 @@ async function startExam(){
  if(settings.start_time||settings.end_time){const t=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Dhaka",hour:"2-digit",minute:"2-digit",hour12:false}).format(now);if(settings.start_time&&t<settings.start_time.slice(0,5))return showStartError("পরীক্ষা এখনো শুরু হয়নি।");if(settings.end_time&&t>settings.end_time.slice(0,5))return showStartError("পরীক্ষার সময় শেষ হয়েছে।")}
  try{
   const {data:check,error:ce}=await supabaseClient.rpc("check_exam_attempt",{p_exam_id:exam.id,p_mobile:mobile,p_device_token:deviceToken,p_attempt_date:getDhakaDate()});
-  if(ce)throw ce;
-  if(check?.already_attempted)throw new Error(check.reason||"এই পরীক্ষাটি আজ ইতিমধ্যে দেওয়া হয়েছে।");
+  if(ce){
+    console.warn("check_exam_attempt unavailable; continuing without pre-check:",ce.message);
+  } else if(check?.already_attempted){
+    throw new Error(check.reason||"এই পরীক্ষাটি আজ ইতিমধ্যে দেওয়া হয়েছে।");
+  }
   document.getElementById("startPage").classList.add("hidden");document.getElementById("examPage").classList.remove("hidden");timeLeft=Number(settings.duration_minutes||exam.duration_minutes||20)*60;currentQuestion=0;answers={};renderQuestion();startTimer();
  }catch(e){console.error(e);showStartError(e.message||"তথ্য যাচাই করতে সমস্যা হয়েছে।");document.getElementById("startButton").disabled=false}
 }
