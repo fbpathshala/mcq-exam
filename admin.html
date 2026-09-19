@@ -123,8 +123,7 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
     <section id="view-settings" class="view">
       <div class="card">
         <h2>⚙️ Exam Settings</h2>
-        <p class="small">প্রতিটি Exam-এর আলাদা marks, negative marking, start/end date-time এবং question distribution সংরক্ষণ করুন। End Date/End Time ফাঁকা রাখলে পরীক্ষার কোনো নির্দিষ্ট শেষ সময় থাকবে না।</p>
-        <div class="small" style="margin:8px 0;padding:9px 11px;background:#eff6ff;border:1px solid #dbeafe;border-radius:10px">🔒 একবার Save করা Exam-এর Settings পরবর্তীতে আবার নির্বাচন করলে আগের তথ্য স্বয়ংক্রিয়ভাবে দেখাবে।</div>
+        <p class="small">প্রতিটি Exam-এর আলাদা marks, negative marking, time, date এবং question distribution সংরক্ষণ করুন।</p>
         <select id="settingsExam"></select>
         <div class="grid">
           <input id="totalQuestions" type="number" min="1" placeholder="Total Questions">
@@ -133,10 +132,9 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
           <input id="duration" type="number" min="1" placeholder="Duration (minutes)">
           <input id="marksPerQuestion" type="number" step="0.01" min="0" placeholder="Marks / Question">
           <input id="negativeMark" type="number" step="0.01" min="0" placeholder="Negative Mark">
-          <input id="examDate" type="date" title="Start Date">
+          <input id="examDate" type="date" title="Exam Date">
           <input id="startTime" type="time" title="Start Time">
-          <input id="endDate" type="date" title="End Date (optional)">
-          <input id="endTime" type="time" title="End Time (optional)">
+          <input id="endTime" type="time" title="End Time">
           <input id="examinerName" type="text" placeholder="পরীক্ষকের নাম">
         </div>
         <label><input id="showAnswers" type="checkbox" style="width:auto"> Submit-এর পর Correct Answer দেখাবে</label>
@@ -323,11 +321,13 @@ async function toggleExam(id){const e=exams.find(x=>String(x.id)===String(id));i
 async function deleteExam(id){if(!confirm("এই Exam এবং এর প্রশ্নগুলো মুছে ফেলবেন?"))return;const {error}=await db.from("exams").delete().eq("id",id);if(error)msg("examMsg",error.message,"error");else loadAll()}
 async function copyLink(id){await navigator.clipboard.writeText(examLink(id));alert("Exam link copied")}
 
-function settingsCacheKey(id){return 'mcq_exam_settings_'+String(id)}
-function cacheSettings(id,s){try{localStorage.setItem(settingsCacheKey(id),JSON.stringify(s))}catch(_){}}
-function readCachedSettings(id){try{const x=localStorage.getItem(settingsCacheKey(id));return x?JSON.parse(x):null}catch(_){return null}}
-function applySettings(s,ex,id){
- s=s||{};
+async function loadSettings(){
+ const id=$('settingsExam').value;
+ if(!id){$('distribution').innerHTML='';return}
+ const ex=exams.find(e=>String(e.id)===String(id));
+ let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
+ if(r.error){console.warn('exam_settings unavailable; using exam defaults',r.error.message)}
+ const s=r.data||{};
  $('totalQuestions').value=s.total_questions??questions.filter(q=>String(q.exam_id)===String(id)).length;
  $('totalMarks').value=s.total_marks??'';
  $('passMark').value=s.pass_mark??'';
@@ -335,27 +335,12 @@ function applySettings(s,ex,id){
  $('marksPerQuestion').value=s.marks_per_question??1;
  $('negativeMark').value=s.negative_mark??0;
  $('examDate').value=s.exam_date??'';
- $('startTime').value=(s.start_time??'').toString().slice(0,5);
- $('endDate').value=s.end_date??'';
- $('endTime').value=(s.end_time??'').toString().slice(0,5);
+ $('startTime').value=s.start_time??'';
+ $('endTime').value=s.end_time??'';
  $('examinerName').value=s.examiner_name??'';
  $('showAnswers').checked=!!s.show_answers;
  $('randomQuestions').checked=!!s.random_questions;
  $('randomOptions').checked=!!s.random_options;
- $('examinerName').value=s.examiner_name??'';
-}
-async function loadSettings(){
- const id=$('settingsExam').value;
- if(!id){$('distribution').innerHTML='';return}
- const ex=exams.find(e=>String(e.id)===String(id));
- let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
- let s=r.data||null;
- if(r.error)console.warn('exam_settings load warning:',r.error.message);
- const cached=readCachedSettings(id);
- // Database is authoritative. Cache is only a fallback for an older/local saved copy.
- if(!s && cached)s=cached;
- applySettings(s||{},ex,id);
- if(s)cacheSettings(id,s);
  renderDistribution();
 }
 async function renderDistribution(){
@@ -374,35 +359,12 @@ async function saveDistribution(){
 async function deleteDist(cat){const id=$('settingsExam').value;if(!id)return;const r=await db.from('exam_category_settings').delete().eq('exam_id',id).eq('category',cat);if(r.error)alert(r.error.message);else renderDistribution()}
 async function saveSettings(){
  const id=$('settingsExam').value;if(!id){msg('settingsMsg','Exam নির্বাচন করুন','error');return}
- const existingResult=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
- if(existingResult.error){msg('settingsMsg',existingResult.error.message,'error');return}
- const current=existingResult.data||readCachedSettings(id)||{};
- const questionCount=questions.filter(q=>String(q.exam_id)===String(id)).length;
- const v={
-  exam_id:id,
-  total_questions:$('totalQuestions').value!==''?Number($('totalQuestions').value):(current.total_questions??questionCount),
-  total_marks:$('totalMarks').value!==''?Number($('totalMarks').value):(current.total_marks??0),
-  pass_mark:$('passMark').value!==''?Number($('passMark').value):(current.pass_mark??0),
-  duration_minutes:$('duration').value!==''?Number($('duration').value):(current.duration_minutes??20),
-  marks_per_question:$('marksPerQuestion').value!==''?Number($('marksPerQuestion').value):(current.marks_per_question??1),
-  negative_mark:$('negativeMark').value!==''?Number($('negativeMark').value):(current.negative_mark??0),
-  exam_date:$('examDate').value||current.exam_date||null,
-  start_time:$('startTime').value||current.start_time||null,
-  end_date:$('endDate').value||current.end_date||null,
-  end_time:$('endTime').value||current.end_time||null,
-  examiner_name:$('examinerName').value.trim()||current.examiner_name||null,
-  show_answers:$('showAnswers').checked,
-  random_questions:$('randomQuestions').checked,
-  random_options:$('randomOptions').checked
- };
+ const v={exam_id:id,total_questions:Number($('totalQuestions').value)||0,total_marks:Number($('totalMarks').value)||0,pass_mark:Number($('passMark').value)||0,duration_minutes:Number($('duration').value)||20,marks_per_question:Number($('marksPerQuestion').value)||1,negative_mark:Number($('negativeMark').value)||0,exam_date:$('examDate').value||null,start_time:$('startTime').value||null,end_time:$('endTime').value||null,examiner_name:$('examinerName').value.trim()||null,show_answers:$('showAnswers').checked,random_questions:$('randomQuestions').checked,random_options:$('randomOptions').checked};
  const r=await db.from('exam_settings').upsert(v,{onConflict:'exam_id'});
  if(r.error){msg('settingsMsg',r.error.message,'error');return}
- cacheSettings(id,v);
  const e=await db.from('exams').update({duration_minutes:v.duration_minutes}).eq('id',id);
  if(e.error){msg('settingsMsg',e.error.message,'error');return}
- msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে — আগের সংরক্ষিত তথ্যও থাকবে','success');
- await loadExams();
- await loadSettings();
+ msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে','success');await loadExams();loadSettings();
 }
 $("settingsExam").onchange=loadSettings;
 $('saveDistBtn').onclick=saveDistribution;
