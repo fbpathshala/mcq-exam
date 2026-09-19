@@ -369,11 +369,6 @@ async function saveSettings(){
 $("settingsExam").onchange=loadSettings;
 $('saveDistBtn').onclick=saveDistribution;
 $('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option>${safe(c)}</option>`).join('');
-$("saveSettingsBtn").onclick=async()=>{
- const id=$("settingsExam").value;if(!id){msg("settingsMsg","Exam নির্বাচন করুন","error");return}
- const duration=Number($("duration").value)||20;const {error}=await db.from("exams").update({duration_minutes:duration}).eq("id",id);
- if(error)msg("settingsMsg",error.message,"error");else{msg("settingsMsg","Duration সংরক্ষণ হয়েছে","success");await loadExams()}
-};
 
 async function loadQuestions(){
  const {data,error}=await db.from("questions").select("*, exams(title)").order("question_order",{ascending:true});
