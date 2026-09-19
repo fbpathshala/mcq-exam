@@ -22,6 +22,11 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
 @media(max-width:650px){.bankItem{padding:12px}.bankQuestion{font-size:15px}.categoryChips button{flex:1 1 calc(50% - 7px);min-width:0}}
 @media(max-width:430px){.menuPanel{grid-template-columns:1fr}.menuPanel button:last-child{grid-column:auto}}
 .sectionTitle{display:flex;align-items:center;gap:8px}.sectionTitle h2{margin:0}.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.stat{padding:16px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(135deg,#fff,#f8fafc);display:flex;align-items:center;justify-content:space-between;min-height:82px}.stat b{font-size:13px;color:var(--muted)}.stat strong{font-size:28px;margin:0}
+
+.dashboardHero{margin:12px 0 16px;padding:22px 20px;border-radius:20px;background:linear-gradient(135deg,#172554 0%,#1d4ed8 58%,#2563eb 100%);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:18px;box-shadow:0 12px 30px #1d4ed833;position:relative;overflow:hidden}.dashboardHero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;right:-55px;top:-70px;background:#ffffff18}.dashboardHero h2{margin:4px 0 6px;font-size:26px}.dashboardHero p{margin:0;color:#dbeafe;line-height:1.6;font-size:14px;max-width:680px}.dashboardKicker{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#bfdbfe}.dashboardBadge{position:relative;z-index:1;white-space:nowrap;padding:9px 12px;border:1px solid #ffffff33;border-radius:999px;background:#ffffff18;font-size:12px;font-weight:700}.dashboardStats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.dashStat{min-height:112px;padding:16px;border-radius:18px;border:1px solid var(--line);display:flex;align-items:center;gap:13px;background:#fff;box-shadow:0 6px 20px #00000008;transition:transform .18s ease,box-shadow .18s ease}.dashStat:hover{transform:translateY(-2px);box-shadow:0 10px 26px #00000010}.dashIcon{width:46px;height:46px;flex:0 0 46px;border-radius:14px;display:grid;place-items:center;font-size:22px}.dashText{min-width:0}.dashText span{display:block;color:var(--muted);font-size:13px;font-weight:700;margin-bottom:5px}.dashText strong{display:block;font-size:30px;line-height:1}.dashBlue .dashIcon{background:#dbeafe}.dashPurple .dashIcon{background:#ede9fe}.dashGreen .dashIcon{background:#dcfce7}.dashOrange .dashIcon{background:#ffedd5}.dashboardNote{margin-top:14px;padding:13px 15px;border:1px solid #dbeafe;background:#eff6ff;border-radius:14px;display:flex;gap:10px;align-items:flex-start;color:#334155;line-height:1.55;font-size:13px}.dashboardNote>span{font-size:19px}.dashboardNote b{color:#1e40af}
+@media(max-width:850px){.dashboardStats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.dashboardHero{padding:18px 16px;border-radius:17px;align-items:flex-start}.dashboardHero h2{font-size:22px}.dashboardBadge{font-size:11px;padding:7px 9px}.dashboardStats{grid-template-columns:1fr 1fr;gap:9px}.dashStat{min-height:94px;padding:12px;gap:9px;border-radius:15px}.dashIcon{width:40px;height:40px;flex-basis:40px;border-radius:12px;font-size:19px}.dashText strong{font-size:25px}.dashText span{font-size:12px}.dashboardNote{font-size:12px}}
+@media(max-width:390px){.dashboardHero{display:block}.dashboardBadge{display:inline-block;margin-top:12px}.dashboardStats{grid-template-columns:1fr}.dashStat{min-height:82px}}
 .view{display:none}.view.active{display:block}.toolbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:12px 0}
 .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;min-width:760px}th,td{padding:9px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left;font-size:14px}th{background:#f8fafc}.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}.activeBadge{background:#dcfce7;color:#166534}.closedBadge{background:#fee2e2;color:#991b1b}
 .modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:14px;z-index:100}.modalBox{background:#fff;width:min(720px,100%);max-height:92vh;overflow:auto;border-radius:16px;padding:18px}
@@ -65,17 +70,39 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
       </div>
     </div>
 
-    <div class="card">
-      <div class="statgrid">
-        <div class="stat"><b>পরীক্ষা</b><strong id="examCount">0</strong></div>
-        <div class="stat"><b>মোট প্রশ্ন</b><strong id="questionCount">0</strong></div>
-        <div class="stat"><b>ফলাফল</b><strong id="resultCount">0</strong></div>
-      </div>
-    </div>
-
     <section id="view-dashboard" class="view active">
-      <div class="card"><h2>🏠 Dashboard</h2><p class="small">এখান থেকে পুরো Admin-এর অবস্থা দেখুন। কাজের বিভাগগুলো উপরের ⋮ মেনু থেকে নির্বাচন করুন।</p></div>
-      <div class="card"><div class="statgrid"><div class="stat"><b>পরীক্ষা</b><strong id="dashExamCount">0</strong></div><div class="stat"><b>মোট প্রশ্ন</b><strong id="dashQuestionCount">0</strong></div><div class="stat"><b>ফলাফল</b><strong id="dashResultCount">0</strong></div><div class="stat"><b>Job Solution</b><strong id="jobCount">0</strong></div></div></div>
+      <div class="dashboardHero">
+        <div>
+          <div class="dashboardKicker">MCQ EXAM ADMIN</div>
+          <h2>🏠 Dashboard</h2>
+          <p>আপনার পরীক্ষার পুরো ব্যবস্থাপনা এক নজরে দেখুন। প্রয়োজনীয় বিভাগগুলো উপরের <b>⋮</b> মেনু থেকে খুলুন।</p>
+        </div>
+        <div class="dashboardBadge">⚡ Live Overview</div>
+      </div>
+
+      <div class="dashboardStats">
+        <div class="dashStat dashBlue">
+          <div class="dashIcon">📋</div>
+          <div class="dashText"><span>পরীক্ষা</span><strong id="dashExamCount">0</strong></div>
+        </div>
+        <div class="dashStat dashPurple">
+          <div class="dashIcon">📝</div>
+          <div class="dashText"><span>মোট প্রশ্ন</span><strong id="dashQuestionCount">0</strong></div>
+        </div>
+        <div class="dashStat dashGreen">
+          <div class="dashIcon">📊</div>
+          <div class="dashText"><span>ফলাফল</span><strong id="dashResultCount">0</strong></div>
+        </div>
+        <div class="dashStat dashOrange">
+          <div class="dashIcon">💼</div>
+          <div class="dashText"><span>Job Solution</span><strong id="jobCount">0</strong></div>
+        </div>
+      </div>
+
+      <div class="dashboardNote">
+        <span>💡</span>
+        <div><b>দ্রুত নেভিগেশন</b><br><span>পরীক্ষা তৈরি, প্রশ্ন যোগ, Question Bank, Results ও Job Solution—সবকিছু উপরের মেনু থেকে পরিচালনা করুন।</span></div>
+      </div>
     </section>
 
     <section id="view-exams" class="view">
@@ -272,7 +299,7 @@ function showView(v){
 async function loadAll(){await loadExams();await loadQuestions();await loadResults();fillAllSelects();renderLinks();renderBank();renderResults();loadSettings();await loadJobSolutions();updateDashboard();}
 async function loadExams(){
  const {data,error}=await db.from("exams").select("*").order("created_at",{ascending:false});
- if(error){msg("examMsg",error.message,"error");return} exams=data||[];$("examCount").textContent=exams.length;$("dashExamCount").textContent=bn(exams.length);fillAllSelects();renderExams();renderLinks();populateJobExam();
+ if(error){msg("examMsg",error.message,"error");return} exams=data||[];$("dashExamCount").textContent=exams.length;$("dashExamCount").textContent=bn(exams.length);fillAllSelects();renderExams();renderLinks();populateJobExam();
 }
 function examLink(id){return new URL("index.html?exam="+encodeURIComponent(id), location.href).href}
 function renderExams(){
@@ -343,7 +370,7 @@ $("saveSettingsBtn").onclick=async()=>{
 async function loadQuestions(){
  const {data,error}=await db.from("questions").select("*, exams(title)").order("question_order",{ascending:true});
  if(error){console.error(error);msg("manualMsg",error.message,"error");return}
- questions=(data||[]).map(q=>({...q,category:normCat(q.category)}));$("questionCount").textContent=questions.length;$("dashQuestionCount").textContent=bn(questions.length);fillCategory("bankCategory",true);renderBankCategories(canonicalCat($("bankCategory").value));renderBank();loadSettings();
+ questions=(data||[]).map(q=>({...q,category:normCat(q.category)}));$("dashQuestionCount").textContent=questions.length;$("dashQuestionCount").textContent=bn(questions.length);fillCategory("bankCategory",true);renderBankCategories(canonicalCat($("bankCategory").value));renderBank();loadSettings();
 }
 $("manualAddBtn").onclick=()=>{$("manualBox").hidden=false;$("manualBox").classList.remove("hidden");$("bulkBox").hidden=true;$("bulkBox").classList.add("hidden")};
 $("bulkUploadBtn").onclick=()=>{$("bulkBox").hidden=false;$("bulkBox").classList.remove("hidden");$("manualBox").hidden=true;$("manualBox").classList.add("hidden")};
@@ -389,7 +416,7 @@ window.deleteQuestion=async id=>{if(!confirm("এই প্রশ্নটি �
 
 async function loadResults(){
  const {data,error}=await db.from('exam_attempts').select('id,exam_id,score,total_questions,submitted_at,attempt_date,exams(id,title),students(name,facebook_name,district,mobile)').order('submitted_at',{ascending:false});
- if(error){console.error(error);return}results=data||[];$('resultCount').textContent=results.length;$('dashResultCount').textContent=bn(results.length);renderResults();
+ if(error){console.error(error);return}results=data||[];$('dashResultCount').textContent=results.length;$('dashResultCount').textContent=bn(results.length);renderResults();
 }
 function renderResults(){
  const ex=$('resultExam').value,s=$('resultSearch').value.trim().toLowerCase();
