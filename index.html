@@ -6,7 +6,7 @@
 <title>MCQ Exam</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:"Noto Sans Bengali",Arial,sans-serif;background:#f3f6fb;color:#1f2937}.header{background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;text-align:center;padding:22px 15px;box-shadow:0 3px 14px rgba(29,78,216,.25)}.header h1{margin:0;font-size:25px}.container{max-width:760px;margin:22px auto;padding:0 14px}.card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:18px}h2{margin-top:0;font-size:21px}label.field{display:block;margin-top:15px;margin-bottom:6px;font-weight:700}input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;font-size:16px;background:#fff}.btn{border:0;border-radius:8px;padding:12px 18px;font-size:16px;cursor:pointer}.start-btn{width:100%;margin-top:22px;background:#2563eb;color:#fff}.next-btn{background:#2563eb;color:#fff}.prev-btn{background:#6b7280;color:#fff}.submit-btn{background:#16a34a;color:#fff}.btn:disabled{opacity:.55;cursor:not-allowed}.question{font-size:20px;font-weight:700;line-height:1.55;margin-bottom:18px}.option{display:flex;align-items:flex-start;gap:8px;background:#f8fafc;border:1px solid #e5e7eb;padding:13px;margin:10px 0;border-radius:9px;cursor:pointer}.option:hover{background:#eff6ff}.option.locked{cursor:default}.option input{width:auto;margin-top:3px}.topbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:15px;font-weight:700}.timer{color:#dc2626}.progress{color:#2563eb}.nav-buttons{display:flex;justify-content:space-between;gap:10px;margin-top:20px}.nav-buttons button{flex:1}.status{padding:12px;border-radius:8px;margin-top:15px;background:#eff6ff;color:#1d4ed8}.error{background:#fef2f2;color:#b91c1c}.success{background:#f0fdf4;color:#15803d}.result{text-align:center}.score{font-size:40px;font-weight:800;color:#2563eb;margin:18px 0}.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0}.result-box{background:#f8fafc;border-radius:10px;padding:14px}.result-box strong{display:block;font-size:24px}.review{text-align:left;margin-top:20px}.review-item{border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin:10px 0}.correct{color:#15803d}.wrong{color:#b91c1c}.muted{color:#6b7280}.hidden{display:none!important}@media(max-width:600px){.header h1{font-size:21px}.card{padding:17px}.question{font-size:18px}.result-grid{grid-template-columns:1fr}.nav-buttons{flex-wrap:wrap}.nav-buttons button{min-width:45%}}
+*{box-sizing:border-box}body{margin:0;font-family:"Noto Sans Bengali",Arial,sans-serif;background:#f3f6fb;color:#1f2937}.header{background:linear-gradient(135deg,#1d4ed8,#2563eb);color:#fff;text-align:center;padding:22px 15px;box-shadow:0 3px 14px rgba(29,78,216,.25)}.header h1{margin:0;font-size:25px}.container{max-width:760px;margin:22px auto;padding:0 14px}.card{background:#fff;border-radius:14px;padding:22px;box-shadow:0 4px 15px rgba(0,0,0,.08);margin-bottom:18px}h2{margin-top:0;font-size:21px}label.field{display:block;margin-top:15px;margin-bottom:6px;font-weight:700}input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;font-size:16px;background:#fff}.btn{border:0;border-radius:8px;padding:12px 18px;font-size:16px;cursor:pointer}.start-btn{width:100%;margin-top:22px;background:#2563eb;color:#fff}.next-btn{background:#2563eb;color:#fff}.prev-btn{background:#6b7280;color:#fff}.submit-btn{background:#16a34a;color:#fff}.btn:disabled{opacity:.55;cursor:not-allowed}.question{font-size:20px;font-weight:700;line-height:1.55;margin-bottom:18px}.option{display:flex;align-items:flex-start;gap:8px;background:#f8fafc;border:1px solid #e5e7eb;padding:13px;margin:10px 0;border-radius:9px;cursor:pointer}.option:hover{background:#eff6ff}.option.locked{cursor:default}.option input{width:auto;margin-top:3px}.topbar{display:flex;justify-content:space-between;gap:10px;margin-bottom:15px;font-weight:700}.timer{color:#dc2626}.progress{color:#2563eb}.nav-buttons{display:flex;justify-content:space-between;gap:10px;margin-top:20px}.nav-buttons button{flex:1}.status{padding:12px;border-radius:8px;margin-top:15px;background:#eff6ff;color:#1d4ed8}.error{background:#fef2f2;color:#b91c1c}.success{background:#f0fdf4;color:#15803d}.result{text-align:center}.score{font-size:40px;font-weight:800;color:#2563eb;margin:18px 0}.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0}.result-box{background:#f8fafc;border-radius:10px;padding:14px}.result-box strong{display:block;font-size:24px}.review{text-align:left;margin-top:20px}.review-item{border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin:10px 0}.correct{color:#15803d}.wrong{color:#b91c1c}.muted{color:#6b7280}.review-correct{border-left:4px solid #16a34a;background:#f0fdf4}.review-wrong{border-left:4px solid #dc2626;background:#fef2f2}.review-explanation{margin-top:10px;padding:10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;line-height:1.6}.hidden{display:none!important}@media(max-width:600px){.header h1{font-size:21px}.card{padding:17px}.question{font-size:18px}.result-grid{grid-template-columns:1fr}.nav-buttons{flex-wrap:wrap}.nav-buttons button{min-width:45%}}
 .brand-badge{font-size:28px;line-height:1}.brand-name{font-size:30px;font-weight:900;letter-spacing:.2px;text-shadow:0 2px 8px rgba(0,0,0,.18)}.brand-sub{font-size:13px;opacity:.92;margin-top:3px}.result-brand{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 0 14px;border-bottom:1px solid #e5e7eb;margin-bottom:14px}.result-brand-title{font-size:20px;font-weight:800;color:#1d4ed8}.result-exam-title{font-size:18px;font-weight:800;color:#111827;margin-bottom:8px}.result-footer-brand{margin-top:22px;padding-top:14px;border-top:1px solid #e5e7eb;color:#6b7280;font-size:13px}.result-footer-brand strong{color:#1d4ed8}.social-highlight{margin-top:18px;padding:16px;border-radius:12px;background:linear-gradient(135deg,#eff6ff,#f8fbff);border:1px solid #bfdbfe;text-align:center}.social-highlight .social-title{font-size:18px;font-weight:900;color:#1d4ed8;margin-bottom:6px}.social-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.social-box{padding:11px;border-radius:10px;background:#fff;border:1px solid #dbeafe;font-weight:800;color:#1e40af}@media(max-width:600px){.social-buttons{grid-template-columns:1fr}}.exam-summary{background:#f8fbff;border:1px solid #dbeafe;border-radius:12px;padding:14px;margin-bottom:18px}.exam-summary h2{margin:0 0 12px;color:#1d4ed8;text-align:center}.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.summary-box{background:#fff;border:1px solid #e5e7eb;border-radius:9px;padding:10px;text-align:center}.summary-box span{display:block;font-size:12px;color:#6b7280;margin-bottom:4px}.summary-box strong{display:block;font-size:16px;color:#111827;word-break:break-word}@media(max-width:600px){.summary-grid{grid-template-columns:1fr 1fr}.summary-box strong{font-size:15px}}</style>
 </head>
 <body>
@@ -42,7 +42,7 @@
 <div id="resultPage" class="card result hidden">
 <div class="result-brand"><div class="brand-badge">📚</div><div><div class="result-brand-title">ফেসবুক পাঠশালা</div><div class="brand-sub">অনলাইন MCQ পরীক্ষা</div></div></div>
 <div class="result-exam-title" id="resultExamTitle">—</div>
-<h2>🎉 পরীক্ষা সম্পন্ন</h2><p id="resultMessage">আপনার ফলাফল:</p><div id="score" class="score">0</div><div class="result-grid"><div class="result-box">প্রাপ্ত নম্বর<strong id="marks">0</strong></div><div class="result-box">শতকরা<strong id="percentage">0%</strong></div><div class="result-box">বর্তমান অবস্থান<strong id="rank">—</strong></div><div class="result-box">মোট পরীক্ষার্থী<strong id="rankTotal">—</strong></div></div><p id="passStatus"></p><p class="muted" style="font-size:13px">মেরিট: বেশি নম্বর আগে; সমান নম্বরে আগে জমা দেওয়া শিক্ষার্থী আগে।</p><div id="review" class="review hidden"></div><div class="social-highlight"><div class="social-title">📣 ফেসবুক পাঠশালার সাথে যুক্ত থাকুন</div><div class="muted">পরীক্ষা, নতুন MCQ ও শিক্ষামূলক আপডেট পেতে আমাদের Facebook Page / Group-এর সাথে যুক্ত থাকুন।</div><div class="social-buttons"><div class="social-box">📘 Facebook Page<br><span class="muted">ফেসবুক পাঠশালা</span></div><div class="social-box">👥 Facebook Group<br><span class="muted">ফেসবুক পাঠশালা</span></div></div></div><div class="result-footer-brand">📚 <strong>ফেসবুক পাঠশালা</strong> — জ্ঞান, অনুশীলন ও সাফল্যের পথে।</div></div>
+<h2>🎉 পরীক্ষা সম্পন্ন</h2><p id="resultMessage">আপনার ফলাফল:</p><div id="score" class="score">0</div><div class="result-grid"><div class="result-box">প্রাপ্ত নম্বর<strong id="marks">0</strong></div><div class="result-box">শতকরা<strong id="percentage">0%</strong></div><div class="result-box">বর্তমান অবস্থান<strong id="rank">—</strong></div><div class="result-box">মোট পরীক্ষার্থী<strong id="rankTotal">—</strong></div></div><p id="passStatus"></p><p class="muted" style="font-size:13px">মেরিট: বেশি নম্বর আগে; সমান নম্বরে আগে জমা দেওয়া শিক্ষার্থী আগে।</p><div id="review" class="review hidden"></div><div id="socialHighlight" class="social-highlight hidden"><div class="social-title">📣 ফেসবুক পাঠশালার সাথে যুক্ত থাকুন</div><div class="muted">নতুন পরীক্ষা, MCQ ও শিক্ষামূলক আপডেট পেতে আমাদের Page ও Group-এ যুক্ত থাকুন।</div><div class="social-buttons"><a id="fbPageLink" class="social-box" href="#" target="_blank" rel="noopener">📘 Facebook Page<br><span class="muted">ফেসবুক পাঠশালা</span></a><a id="fbGroupLink" class="social-box" href="#" target="_blank" rel="noopener">👥 Facebook Group<br><span class="muted">ফেসবুক পাঠশালা</span></a></div></div><div class="result-footer-brand">📚 <strong>ফেসবুক পাঠশালা</strong> — জ্ঞান, অনুশীলন ও সাফল্যের পথে।</div></div>
 </div>
 <script>
 const SUPABASE_URL="https://ydvbnalhcnfqpxkkmywr.supabase.co";
@@ -79,7 +79,7 @@ async function loadExam(){
   settings={
    duration_minutes:Number(exam.duration_minutes||20),
    total_questions:0,total_marks:0,pass_mark:0,marks_per_question:1,
-   negative_mark:0,show_answers:true,random_questions:false,random_options:false,
+   negative_mark:0,show_answers:false,random_questions:false,random_options:false,
    exam_date:null,start_time:null,end_date:null,end_time:null,examiner_name:null
   };
   try{
@@ -90,18 +90,41 @@ async function loadExam(){
    settings={...settings,exam_date:exam.exam_date??null,start_time:exam.start_time??null,end_time:exam.end_time??null};
   }
 
-  // Student-safe view is preferred when available. If it is not available,
-  // fall back to the existing questions table without requesting correct_option.
-  let qsResult=await supabaseClient.from("student_questions")
-    .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order")
+  // New exam-question mapping is preferred. It lets the same Question Bank
+  // question be reused in many exams without moving/copying the master question.
+  // Older exams still work through the existing student_questions/questions fallback.
+  let allQuestions=[];
+  try{
+   const mapResult=await supabaseClient.from("exam_questions")
+    .select("question_id,question_order")
     .eq("exam_id",exam.id).order("question_order",{ascending:true});
-  if(qsResult.error){
-   qsResult=await supabaseClient.from("questions")
-    .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order")
+   if(!mapResult.error && (mapResult.data||[]).length){
+    const ids=(mapResult.data||[]).map(x=>x.question_id);
+    let qr=await supabaseClient.from("questions")
+      .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order,explanation")
+      .in("id",ids);
+    if(qr.error){
+      qr=await supabaseClient.from("student_questions")
+        .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order,explanation")
+        .in("id",ids);
+    }
+    if(qr.error)throw qr.error;
+    const byId=new Map((qr.data||[]).map(q=>[String(q.id),q]));
+    allQuestions=(mapResult.data||[]).map(x=>{const q=byId.get(String(x.question_id));return q?{...q,question_order:x.question_order}:null}).filter(Boolean);
+   }
+  }catch(_){/* compatibility fallback below */}
+  if(!allQuestions.length){
+   let qsResult=await supabaseClient.from("student_questions")
+    .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order,explanation")
     .eq("exam_id",exam.id).order("question_order",{ascending:true});
+   if(qsResult.error){
+    qsResult=await supabaseClient.from("questions")
+      .select("id,exam_id,category,question_text,option_a,option_b,option_c,option_d,question_order,explanation")
+      .eq("exam_id",exam.id).order("question_order",{ascending:true});
+   }
+   if(qsResult.error)throw qsResult.error;
+   allQuestions=qsResult.data||[];
   }
-  if(qsResult.error)throw qsResult.error;
-  let allQuestions=qsResult.data||[];
   if(!allQuestions.length)throw new Error("এই পরীক্ষায় কোনো প্রশ্ন নেই।");
 
   // Category distribution is optional; if the table is unavailable, simply
@@ -200,7 +223,7 @@ async function submitExam(autoSubmit=false){
   // Compatibility fallback for a database where the newer RPC has not yet
   // been installed. This keeps the already-created basic MCQ database usable.
   const full=await supabaseClient.from("questions")
-   .select("id,question_text,option_a,option_b,option_c,option_d,correct_option")
+   .select("id,question_text,option_a,option_b,option_c,option_d,correct_option,explanation")
    .eq("exam_id",exam.id).order("question_order",{ascending:true});
   if(full.error)throw rpc.error;
   const correctRows=full.data||[];
@@ -215,7 +238,8 @@ async function submitExam(autoSubmit=false){
    review.push({question_text:q.question_text,selected_option:selected||null,
     selected_text:selected?(q["option_"+selected.toLowerCase()]||""):null,
     correct_option:String(q.correct_option||"").toUpperCase(),
-    correct_text:q["option_"+String(q.correct_option||"").toLowerCase()]||"",is_correct:ok});
+    correct_text:q["option_"+String(q.correct_option||"").toLowerCase()]||"",
+    explanation:q.explanation||"",is_correct:ok});
   }
   const today=getDhakaDate();
   const sid="MOBILE-"+student.mobile;
@@ -246,8 +270,8 @@ async function submitExam(autoSubmit=false){
   else alert("ফলাফল সংরক্ষণ করতে সমস্যা হয়েছে: "+(e.message||"অজানা সমস্যা"));
  }
 }
-function showResult(autoSubmit){document.getElementById("examPage").classList.add("hidden");document.getElementById("resultPage").classList.remove("hidden");document.getElementById("resultExamTitle").textContent=exam?.title||"পরীক্ষার ফলাফল";const total=Number(resultData.total_marks||0),score=Number(resultData.score||0),pct=Number(resultData.percentage||0);document.getElementById("score").textContent=score+" / "+total;document.getElementById("marks").textContent=score;document.getElementById("percentage").textContent=Math.round(pct)+"%";document.getElementById("rank").textContent=resultData.rank?bn(resultData.rank):"—";document.getElementById("rankTotal").textContent=resultData.rank_total?bn(resultData.rank_total):"—";document.getElementById("resultMessage").textContent=autoSubmit?"⏰ সময় শেষ হওয়ায় পরীক্ষা জমা হয়েছে।":"🎉 আপনার পরীক্ষা সফলভাবে জমা হয়েছে।";const pass=Number(resultData.pass_mark||0)<=score;document.getElementById("passStatus").textContent=resultData.pass_mark?((pass?"✅ উত্তীর্ণ":"❌ অনুত্তীর্ণ")+` — পাস নম্বর ${resultData.pass_mark}`):"";if(settings?.show_answers!==false&&Array.isArray(resultData.review))renderReview(resultData.review)}
-function renderReview(items){const box=document.getElementById("review");box.classList.remove("hidden");box.innerHTML="<h3>উত্তর পর্যালোচনা</h3>";items.forEach((r,i)=>{const ok=r.is_correct;const div=document.createElement("div");div.className="review-item";div.innerHTML=`<strong>${bn(i+1)}. ${escapeHtml(r.question_text||"")}</strong><p>আপনার উত্তর: <span class="${ok?"correct":"wrong"}">${r.selected_option?optionLetters[r.selected_option]+". "+escapeHtml(r.selected_text||""):"দেওয়া হয়নি"}</span></p><p>সঠিক উত্তর: <span class="correct">${optionLetters[r.correct_option]}. ${escapeHtml(r.correct_text||"")}</span></p>`;box.appendChild(div)})}
+function showResult(autoSubmit){document.getElementById("examPage").classList.add("hidden");document.getElementById("resultPage").classList.remove("hidden");document.getElementById("resultExamTitle").textContent=exam?.title||"পরীক্ষার ফলাফল";const total=Number(resultData.total_marks||0),score=Number(resultData.score||0),pct=Number(resultData.percentage||0);document.getElementById("score").textContent=score+" / "+total;document.getElementById("marks").textContent=score;document.getElementById("percentage").textContent=Math.round(pct)+"%";document.getElementById("rank").textContent=resultData.rank?bn(resultData.rank):"—";document.getElementById("rankTotal").textContent=resultData.rank_total?bn(resultData.rank_total):"—";document.getElementById("resultMessage").textContent=autoSubmit?"⏰ সময় শেষ হওয়ায় পরীক্ষা জমা হয়েছে।":"🎉 আপনার পরীক্ষা সফলভাবে জমা হয়েছে।";const pass=Number(resultData.pass_mark||0)<=score;document.getElementById("passStatus").textContent=resultData.pass_mark?((pass?"✅ উত্তীর্ণ":"❌ অনুত্তীর্ণ")+` — পাস নম্বর ${resultData.pass_mark}`):"";const reviewBox=document.getElementById("review");reviewBox.classList.add("hidden");reviewBox.innerHTML="";if(settings?.show_answers===true&&Array.isArray(resultData.review))renderReview(resultData.review);const sh=document.getElementById("socialHighlight"),p=document.getElementById("fbPageLink"),g=document.getElementById("fbGroupLink");const pu=String(settings?.facebook_page_url||"").trim(),gu=String(settings?.facebook_group_url||"").trim();if(pu||gu){sh.classList.remove("hidden");p.classList.toggle("hidden",!pu);g.classList.toggle("hidden",!gu);if(pu)p.href=pu;if(gu)g.href=gu}else sh.classList.add("hidden")}
+function renderReview(items){const box=document.getElementById("review");box.classList.remove("hidden");box.innerHTML=`<h3>📋 আপনার উত্তরপত্র ও সঠিক উত্তর</h3><p><b>আপনার ভুলগুলো এখানে সাথে সাথে মিলিয়ে দেখুন।</b></p><p class="muted">সবুজ = সঠিক, লাল = ভুল। প্রতিটি প্রশ্নের নিচে সঠিক উত্তর ও সংক্ষিপ্ত ব্যাখ্যা দেওয়া আছে।</p>`;items.forEach((r,i)=>{const ok=r.is_correct;const div=document.createElement("div");div.className="review-item "+(ok?"review-correct":"review-wrong");div.innerHTML=`<strong>${bn(i+1)}. ${escapeHtml(r.question_text||"")}</strong><p>আপনার উত্তর: <span class="${ok?"correct":"wrong"}">${r.selected_option?optionLetters[r.selected_option]+". "+escapeHtml(r.selected_text||""):"দেওয়া হয়নি"}</span> ${ok?"✅":"❌"}</p><p>সঠিক উত্তর: <span class="correct">${optionLetters[r.correct_option]}. ${escapeHtml(r.correct_text||"")}</span></p>${r.explanation?`<div class="review-explanation"><b>ব্যাখ্যা:</b> ${escapeHtml(r.explanation)}</div>`:""}`;box.appendChild(div)})}
 renderDistricts();loadExam();
 </script>
 </body>
