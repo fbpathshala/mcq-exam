@@ -124,6 +124,7 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
       <div class="card">
         <h2>⚙️ Exam Settings</h2>
         <p class="small">প্রতিটি Exam-এর আলাদা marks, negative marking, time, date এবং question distribution সংরক্ষণ করুন।</p>
+        <div class="small" style="margin:8px 0;padding:9px 11px;background:#eff6ff;border:1px solid #dbeafe;border-radius:10px">🔒 একবার Save করা Exam-এর Settings পরবর্তীতে আবার নির্বাচন করলে আগের তথ্য স্বয়ংক্রিয়ভাবে দেখাবে।</div>
         <select id="settingsExam"></select>
         <div class="grid">
           <input id="totalQuestions" type="number" min="1" placeholder="Total Questions">
@@ -321,13 +322,11 @@ async function toggleExam(id){const e=exams.find(x=>String(x.id)===String(id));i
 async function deleteExam(id){if(!confirm("এই Exam এবং এর প্রশ্নগুলো মুছে ফেলবেন?"))return;const {error}=await db.from("exams").delete().eq("id",id);if(error)msg("examMsg",error.message,"error");else loadAll()}
 async function copyLink(id){await navigator.clipboard.writeText(examLink(id));alert("Exam link copied")}
 
-async function loadSettings(){
- const id=$('settingsExam').value;
- if(!id){$('distribution').innerHTML='';return}
- const ex=exams.find(e=>String(e.id)===String(id));
- let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
- if(r.error){console.warn('exam_settings unavailable; using exam defaults',r.error.message)}
- const s=r.data||{};
+function settingsCacheKey(id){return 'mcq_exam_settings_'+String(id)}
+function cacheSettings(id,s){try{localStorage.setItem(settingsCacheKey(id),JSON.stringify(s))}catch(_){}}
+function readCachedSettings(id){try{const x=localStorage.getItem(settingsCacheKey(id));return x?JSON.parse(x):null}catch(_){return null}}
+function applySettings(s,ex,id){
+ s=s||{};
  $('totalQuestions').value=s.total_questions??questions.filter(q=>String(q.exam_id)===String(id)).length;
  $('totalMarks').value=s.total_marks??'';
  $('passMark').value=s.pass_mark??'';
@@ -335,12 +334,25 @@ async function loadSettings(){
  $('marksPerQuestion').value=s.marks_per_question??1;
  $('negativeMark').value=s.negative_mark??0;
  $('examDate').value=s.exam_date??'';
- $('startTime').value=s.start_time??'';
- $('endTime').value=s.end_time??'';
+ $('startTime').value=(s.start_time??'').toString().slice(0,5);
+ $('endTime').value=(s.end_time??'').toString().slice(0,5);
  $('examinerName').value=s.examiner_name??'';
  $('showAnswers').checked=!!s.show_answers;
  $('randomQuestions').checked=!!s.random_questions;
  $('randomOptions').checked=!!s.random_options;
+}
+async function loadSettings(){
+ const id=$('settingsExam').value;
+ if(!id){$('distribution').innerHTML='';return}
+ const ex=exams.find(e=>String(e.id)===String(id));
+ let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
+ let s=r.data||null;
+ if(r.error)console.warn('exam_settings load warning:',r.error.message);
+ const cached=readCachedSettings(id);
+ // Database is authoritative. Cache is only a fallback for an older/local saved copy.
+ if(!s && cached)s=cached;
+ applySettings(s||{},ex,id);
+ if(s)cacheSettings(id,s);
  renderDistribution();
 }
 async function renderDistribution(){
@@ -359,16 +371,19 @@ async function saveDistribution(){
 async function deleteDist(cat){const id=$('settingsExam').value;if(!id)return;const r=await db.from('exam_category_settings').delete().eq('exam_id',id).eq('category',cat);if(r.error)alert(r.error.message);else renderDistribution()}
 async function saveSettings(){
  const id=$('settingsExam').value;if(!id){msg('settingsMsg','Exam নির্বাচন করুন','error');return}
- const v={exam_id:id,total_questions:Number($('totalQuestions').value)||0,total_marks:Number($('totalMarks').value)||0,pass_mark:Number($('passMark').value)||0,duration_minutes:Number($('duration').value)||20,marks_per_question:Number($('marksPerQuestion').value)||1,negative_mark:Number($('negativeMark').value)||0,exam_date:$('examDate').value||null,start_time:$('startTime').value||null,end_time:$('endTime').value||null,examiner_name:$('examinerName').value.trim()||null,show_answers:$('showAnswers').checked,random_questions:$('randomQuestions').checked,random_options:$('randomOptions').checked};
+ const current=(await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle()).data||readCachedSettings(id)||{};
+ const v={exam_id:id,total_questions:Number($('totalQuestions').value)||Number(current.total_questions)||questions.filter(q=>String(q.exam_id)===String(id)).length,total_marks:Number($('totalMarks').value)||Number(current.total_marks)||0,pass_mark:Number($('passMark').value)||Number(current.pass_mark)||0,duration_minutes:Number($('duration').value)||Number(current.duration_minutes)||20,marks_per_question:Number($('marksPerQuestion').value)||Number(current.marks_per_question)||1,negative_mark:Number($('negativeMark').value)||Number(current.negative_mark)||0,exam_date:$('examDate').value||current.exam_date||null,start_time:$('startTime').value||current.start_time||null,end_time:$('endTime').value||current.end_time||null,examiner_name:$('examinerName').value.trim()||current.examiner_name||null,show_answers:$('showAnswers').checked,random_questions:$('randomQuestions').checked,random_options:$('randomOptions').checked};
  const r=await db.from('exam_settings').upsert(v,{onConflict:'exam_id'});
  if(r.error){msg('settingsMsg',r.error.message,'error');return}
+ cacheSettings(id,v);
  const e=await db.from('exams').update({duration_minutes:v.duration_minutes}).eq('id',id);
  if(e.error){msg('settingsMsg',e.error.message,'error');return}
- msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে','success');await loadExams();loadSettings();
+ msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে — পরবর্তীতে এই Exam নির্বাচন করলেও সেটিংস থাকবে','success');await loadExams();loadSettings();
 }
 $("settingsExam").onchange=loadSettings;
 $('saveDistBtn').onclick=saveDistribution;
 $('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option>${safe(c)}</option>`).join('');
+$("saveSettingsBtn").onclick=saveSettings;
 
 async function loadQuestions(){
  const {data,error}=await db.from("questions").select("*, exams(title)").order("question_order",{ascending:true});
