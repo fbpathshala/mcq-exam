@@ -14,7 +14,7 @@
 <div class="container">
 <div id="startPage" class="card">
 <h2 id="examTitle">Exam</h2>
-<p id="examInfo">পরীক্ষা শুরু করার আগে নিচের তথ্যগুলো সঠিকভাবে পূরণ করুন।</p>
+<p id="examInfo">পরীক্ষা শুরু করার আগে নিচের তথ্যগুলো সঠিকভাবে পূরণ করুন।</p><p id="examinerInfo" class="muted"></p>
 <label class="field" for="studentName">নাম</label><input id="studentName" type="text" placeholder="আপনার নাম লিখুন" autocomplete="name">
 <label class="field" for="facebookName">ফেসবুক আইডি নাম</label><input id="facebookName" type="text" placeholder="ফেসবুকে ব্যবহৃত নাম লিখুন">
 <label class="field" for="district">নিজ জেলা</label>
@@ -63,7 +63,7 @@ async function loadExam(){
    duration_minutes:Number(exam.duration_minutes||20),
    total_questions:0,total_marks:0,pass_mark:0,marks_per_question:1,
    negative_mark:0,show_answers:true,random_questions:false,random_options:false,
-   exam_date:null,start_time:null,end_time:null
+   exam_date:null,start_time:null,end_time:null,examiner_name:null
   };
   try{
    const {data:st}=await supabaseClient.from("exam_settings").select("*").eq("exam_id",exam.id).maybeSingle();
@@ -105,6 +105,7 @@ async function loadExam(){
   optionMaps={};
   questions.forEach(q=>{let arr=["A","B","C","D"];if(settings.random_options)shuffle(arr);optionMaps[q.id]=arr;});
   document.getElementById("examInfo").textContent=`${exam.title} — ${bn(questions.length)}টি প্রশ্ন | সময়: ${bn(Number(settings.duration_minutes||20))} মিনিট`;
+  document.getElementById("examinerInfo").textContent=settings.examiner_name?`পরীক্ষক: ${settings.examiner_name}`:"";
   status.className="status success";
   status.textContent="পরীক্ষা শুরু করার জন্য তথ্য পূরণ করুন।";
  }catch(e){
