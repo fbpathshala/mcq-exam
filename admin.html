@@ -110,6 +110,7 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
         <div class="sectionTitle"><h2>📋 Exam Management</h2></div>
         <div class="grid" style="margin-top:12px">
           <input id="examTitle" placeholder="নতুন পরীক্ষার নাম">
+          <select id="createExamJobSource"><option value="">Job Solution থেকে প্রশ্ন নেওয়া হবে না</option></select>
           <button id="createExamBtn">➕ নতুন পরীক্ষা তৈরি</button>
         </div>
         <div id="examMsg" class="msg"></div>
@@ -118,12 +119,35 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
           <tbody id="examTable"></tbody>
         </table></div>
       </div>
+      <div class="card">
+        <h3>🧩 Exam Question Builder</h3>
+        <p class="small">একটি Exam-এর জন্য Job Solution থেকে প্রশ্ন নেওয়া, Question Bank থেকে নিজে ক্লিক করে প্রশ্ন বাছাই করা, অথবা Random প্রশ্ন নেওয়া যাবে। Question Bank-এর মূল প্রশ্নগুলো অপরিবর্তিত থাকবে।</p>
+        <div class="grid">
+          <select id="builderExam"></select>
+          <select id="builderJobSource"><option value="">Job Solution নির্বাচন করুন</option></select>
+          <button id="importJobToExamBtn">💼 Job Solution থেকে নিন</button>
+        </div>
+        <div class="grid" style="margin-top:8px">
+          <select id="builderCategory"><option value="">সব Category</option></select>
+          <input id="builderSearch" placeholder="প্রশ্ন খুঁজুন">
+          <input id="builderRandomCount" type="number" min="1" placeholder="Random কতটি?">
+          <button id="randomBankToExamBtn" class="light">🎲 Random Question Bank</button>
+        </div>
+        <div class="actions" style="margin-top:8px">
+          <button id="saveSelectedBankBtn">☑️ নির্বাচিত প্রশ্ন Exam-এ যুক্ত করুন</button>
+          <button id="clearExamQuestionsBtn" class="danger">🗑️ এই Exam-এর প্রশ্ন তালিকা খালি করুন</button>
+        </div>
+        <div id="builderMsg" class="msg"></div>
+        <div class="small" id="builderSelectedInfo"></div>
+        <div id="builderQuestionList" class="card" style="max-height:520px;overflow:auto"></div>
+      </div>
     </section>
 
     <section id="view-settings" class="view">
       <div class="card">
         <h2>⚙️ Exam Settings</h2>
-        <p class="small">প্রতিটি Exam-এর আলাদা marks, negative marking, time, date এবং question distribution সংরক্ষণ করুন।</p>
+        <p class="small">প্রতিটি Exam-এর আলাদা marks, negative marking, start/end date-time এবং question distribution সংরক্ষণ করুন। End Date/End Time ফাঁকা রাখলে পরীক্ষার কোনো নির্দিষ্ট শেষ সময় থাকবে না।</p>
+        <div class="small" style="margin:8px 0;padding:9px 11px;background:#eff6ff;border:1px solid #dbeafe;border-radius:10px">🔒 একবার Save করা Exam-এর Settings পরবর্তীতে আবার নির্বাচন করলে আগের তথ্য স্বয়ংক্রিয়ভাবে দেখাবে।</div>
         <select id="settingsExam"></select>
         <div class="grid">
           <input id="totalQuestions" type="number" min="1" placeholder="Total Questions">
@@ -132,9 +156,10 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
           <input id="duration" type="number" min="1" placeholder="Duration (minutes)">
           <input id="marksPerQuestion" type="number" step="0.01" min="0" placeholder="Marks / Question">
           <input id="negativeMark" type="number" step="0.01" min="0" placeholder="Negative Mark">
-          <input id="examDate" type="date" title="Exam Date">
+          <input id="examDate" type="date" title="Start Date">
           <input id="startTime" type="time" title="Start Time">
-          <input id="endTime" type="time" title="End Time">
+          <input id="endDate" type="date" title="End Date (optional)">
+          <input id="endTime" type="time" title="End Time (optional)">
           <input id="examinerName" type="text" placeholder="পরীক্ষকের নাম">
         </div>
         <label><input id="showAnswers" type="checkbox" style="width:auto"> Submit-এর পর Correct Answer দেখাবে</label>
@@ -279,9 +304,9 @@ function fillExam(id,allLabel="Exam নির্বাচন করুন"){
 }
 function fillAllSelects(){
  if($('distCategory')) $('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option value="${safe(c)}">${safe(c)}</option>`).join("");
- ["settingsExam","manualExam","bulkExam","editExam","paperExam","answerExam"].forEach(id=>fillExam(id));
+ ["settingsExam","manualExam","bulkExam","editExam","paperExam","answerExam","builderExam"].forEach(id=>fillExam(id));
  fillExam("bankExam","সব পরীক্ষা"); fillExam("resultExam","সব পরীক্ষা");
- fillCategory("manualCategory",false); fillCategory("editCategory",false); fillCategory("bankCategory",true); populateJobExam();
+ fillCategory("manualCategory",false); fillCategory("editCategory",false); fillCategory("bankCategory",true); fillCategory("builderCategory",true); populateJobExam(); loadBuilderSources();
 }
 async function session(){
  const {data}=await db.auth.getSession();
@@ -306,28 +331,37 @@ function showView(v){
 async function loadAll(){await loadExams();await loadQuestions();await loadResults();fillAllSelects();renderLinks();renderBank();renderResults();loadSettings();await loadJobSolutions();updateDashboard();}
 async function loadExams(){
  const {data,error}=await db.from("exams").select("*").order("created_at",{ascending:false});
- if(error){msg("examMsg",error.message,"error");return} exams=data||[];$("dashExamCount").textContent=exams.length;$("dashExamCount").textContent=bn(exams.length);fillAllSelects();renderExams();renderLinks();populateJobExam();
+ if(error){msg("examMsg",error.message,"error");return} exams=data||[];$("dashExamCount").textContent=bn(exams.length);fillAllSelects();renderExams();renderLinks();populateJobExam();loadBuilderSources();renderExamBuilder();
 }
 function examLink(id){return new URL("index.html?exam="+encodeURIComponent(id), location.href).href}
 function renderExams(){
  $("examTable").innerHTML=exams.map(e=>`<tr><td><b>${safe(e.title)}</b></td><td>${safe(e.duration_minutes||20)} মিনিট</td><td><span class="badge ${e.is_active?"activeBadge":"closedBadge"}">${e.is_active?"Active":"Closed"}</span></td><td><button class="light" onclick="copyLink('${e.id}')">Copy</button></td><td><div class="actions"><button onclick="toggleExam('${e.id}')">${e.is_active?"Close":"Open"}</button><button class="danger" onclick="deleteExam('${e.id}')">Delete</button></div></td></tr>`).join("");
 }
 $("createExamBtn").onclick=async()=>{
- const title=$("examTitle").value.trim();if(!title){msg("examMsg","Exam-এর নাম দিন","error");return}
- const {error}=await db.from("exams").insert({title,is_active:true,duration_minutes:20});
- if(error)msg("examMsg",error.message,"error");else{$("examTitle").value="";msg("examMsg","Exam তৈরি হয়েছে","success");await loadExams()}
+ const title=$("examTitle").value.trim(),jobId=$("createExamJobSource").value||null;if(!title){msg("examMsg","Exam-এর নাম দিন","error");return}
+ const ins=await db.from("exams").insert({title,is_active:true,duration_minutes:20}).select().single();
+ if(ins.error){msg("examMsg",ins.error.message,"error");return}
+ const examId=ins.data.id;
+ if(jobId){const jr=await db.from("job_solution_questions").select("question_id,question_order").eq("job_solution_id",jobId).order("question_order",{ascending:true});if(jr.error){msg("examMsg","Exam তৈরি হয়েছে, কিন্তু Job Solution প্রশ্ন নেওয়া যায়নি: "+jr.error.message,"error");return}const rows=(jr.data||[]).map((x,i)=>({exam_id:examId,question_id:x.question_id,question_order:x.question_order||i+1}));if(rows.length){const er=await db.from("exam_questions").upsert(rows,{onConflict:"exam_id,question_id"});if(er.error){msg("examMsg","Exam তৈরি হয়েছে, কিন্তু প্রশ্ন যুক্ত হয়নি: "+er.error.message,"error");return}}}
+ $("examTitle").value="";$("createExamJobSource").value="";msg("examMsg",jobId?"Exam তৈরি হয়েছে এবং Job Solution-এর প্রশ্ন যুক্ত হয়েছে।":"Exam তৈরি হয়েছে","success");await loadExams();
 };
 async function toggleExam(id){const e=exams.find(x=>String(x.id)===String(id));if(!e)return;const {error}=await db.from("exams").update({is_active:!e.is_active}).eq("id",id);if(error)msg("examMsg",error.message,"error");else loadExams()}
 async function deleteExam(id){if(!confirm("এই Exam এবং এর প্রশ্নগুলো মুছে ফেলবেন?"))return;const {error}=await db.from("exams").delete().eq("id",id);if(error)msg("examMsg",error.message,"error");else loadAll()}
 async function copyLink(id){await navigator.clipboard.writeText(examLink(id));alert("Exam link copied")}
 
-async function loadSettings(){
- const id=$('settingsExam').value;
- if(!id){$('distribution').innerHTML='';return}
- const ex=exams.find(e=>String(e.id)===String(id));
- let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
- if(r.error){console.warn('exam_settings unavailable; using exam defaults',r.error.message)}
- const s=r.data||{};
+function settingsCacheKey(id){return 'mcq_exam_settings_'+String(id)}
+function cacheSettings(id,s){try{localStorage.setItem(settingsCacheKey(id),JSON.stringify(s))}catch(_){}}
+function readCachedSettings(id){try{const x=localStorage.getItem(settingsCacheKey(id));return x?JSON.parse(x):null}catch(_){return null}}
+function mergeSavedSettings(base,...sources){
+ let out={...(base||{})};
+ for(const src of sources){
+  if(!src)continue;
+  Object.keys(src).forEach(k=>{if(src[k]!==null&&src[k]!==undefined)out[k]=src[k]});
+ }
+ return out;
+}
+function applySettings(s,ex,id){
+ s=s||{};
  $('totalQuestions').value=s.total_questions??questions.filter(q=>String(q.exam_id)===String(id)).length;
  $('totalMarks').value=s.total_marks??'';
  $('passMark').value=s.pass_mark??'';
@@ -335,12 +369,27 @@ async function loadSettings(){
  $('marksPerQuestion').value=s.marks_per_question??1;
  $('negativeMark').value=s.negative_mark??0;
  $('examDate').value=s.exam_date??'';
- $('startTime').value=s.start_time??'';
- $('endTime').value=s.end_time??'';
+ $('startTime').value=(s.start_time??'').toString().slice(0,5);
+ $('endDate').value=s.end_date??'';
+ $('endTime').value=(s.end_time??'').toString().slice(0,5);
  $('examinerName').value=s.examiner_name??'';
  $('showAnswers').checked=!!s.show_answers;
  $('randomQuestions').checked=!!s.random_questions;
  $('randomOptions').checked=!!s.random_options;
+}
+async function loadSettings(){
+ const id=$('settingsExam').value;
+ if(!id){$('distribution').innerHTML='';return}
+ const ex=exams.find(e=>String(e.id)===String(id));
+ let r=await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle();
+ let s=r.data||null;
+ if(r.error)console.warn('exam_settings load warning:',r.error.message);
+ const cached=readCachedSettings(id);
+ // Merge only real saved values. A NULL in an older/incomplete DB row must not erase a previously saved value.
+ const legacy={exam_id:id,duration_minutes:ex?.duration_minutes,exam_date:ex?.exam_date??null,start_time:ex?.start_time??null,end_time:ex?.end_time??null,total_questions:questions.filter(q=>String(q.exam_id)===String(id)).length};
+ s=mergeSavedSettings(legacy,cached,s);
+ applySettings(s,ex,id);
+ cacheSettings(id,s);
  renderDistribution();
 }
 async function renderDistribution(){
@@ -359,22 +408,61 @@ async function saveDistribution(){
 async function deleteDist(cat){const id=$('settingsExam').value;if(!id)return;const r=await db.from('exam_category_settings').delete().eq('exam_id',id).eq('category',cat);if(r.error)alert(r.error.message);else renderDistribution()}
 async function saveSettings(){
  const id=$('settingsExam').value;if(!id){msg('settingsMsg','Exam নির্বাচন করুন','error');return}
- const v={exam_id:id,total_questions:Number($('totalQuestions').value)||0,total_marks:Number($('totalMarks').value)||0,pass_mark:Number($('passMark').value)||0,duration_minutes:Number($('duration').value)||20,marks_per_question:Number($('marksPerQuestion').value)||1,negative_mark:Number($('negativeMark').value)||0,exam_date:$('examDate').value||null,start_time:$('startTime').value||null,end_time:$('endTime').value||null,examiner_name:$('examinerName').value.trim()||null,show_answers:$('showAnswers').checked,random_questions:$('randomQuestions').checked,random_options:$('randomOptions').checked};
+ const fetched=(await db.from('exam_settings').select('*').eq('exam_id',id).maybeSingle()).data||{};
+ const ex=exams.find(e=>String(e.id)===String(id))||{};
+ const current=mergeSavedSettings(ex,readCachedSettings(id),fetched);
+ const v={exam_id:id,total_questions:Number($('totalQuestions').value)||Number(current.total_questions)||questions.filter(q=>String(q.exam_id)===String(id)).length,total_marks:Number($('totalMarks').value)||Number(current.total_marks)||0,pass_mark:Number($('passMark').value)||Number(current.pass_mark)||0,duration_minutes:Number($('duration').value)||Number(current.duration_minutes)||20,marks_per_question:Number($('marksPerQuestion').value)||Number(current.marks_per_question)||1,negative_mark:Number($('negativeMark').value)||Number(current.negative_mark)||0,exam_date:$('examDate').value||current.exam_date||null,start_time:$('startTime').value||current.start_time||null,end_date:$('endDate').value||current.end_date||null,end_time:$('endTime').value||current.end_time||null,examiner_name:$('examinerName').value.trim()||current.examiner_name||null,show_answers:$('showAnswers').checked,random_questions:$('randomQuestions').checked,random_options:$('randomOptions').checked};
  const r=await db.from('exam_settings').upsert(v,{onConflict:'exam_id'});
  if(r.error){msg('settingsMsg',r.error.message,'error');return}
+ cacheSettings(id,v);
  const e=await db.from('exams').update({duration_minutes:v.duration_minutes}).eq('id',id);
  if(e.error){msg('settingsMsg',e.error.message,'error');return}
- msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে','success');await loadExams();loadSettings();
+ msg('settingsMsg','Exam Settings সংরক্ষণ হয়েছে — পরবর্তীতে এই Exam নির্বাচন করলেও সেটিংস থাকবে','success');await loadExams();loadSettings();
 }
 $("settingsExam").onchange=loadSettings;
 $('saveDistBtn').onclick=saveDistribution;
 $('distCategory').innerHTML='<option value="">Category নির্বাচন করুন</option>'+CATEGORIES.map(c=>`<option>${safe(c)}</option>`).join('');
 $("saveSettingsBtn").onclick=saveSettings;
 
+function loadBuilderSources(){
+ const opts='<option value="">Job Solution নির্বাচন করুন</option>';
+ Promise.resolve(db.from('job_solutions').select('id,title').order('created_at',{ascending:false})).then(r=>{
+  const html=opts+(r.data||[]).map(j=>`<option value="${j.id}">${safe(j.title)}</option>`).join('');
+  ['builderJobSource','createExamJobSource'].forEach(id=>{if($(id))$(id).innerHTML=html});
+ }).catch(()=>{});
+}
+async function renderExamBuilder(){
+ const examId=$('builderExam')?.value;if(!examId){if($('builderQuestionList'))$('builderQuestionList').innerHTML='<div class="small">আগে একটি Exam নির্বাচন করুন।</div>';return}
+ const selected=await db.from('exam_questions').select('question_id,question_order').eq('exam_id',examId).order('question_order',{ascending:true});
+ const selectedIds=new Set((selected.data||[]).map(x=>String(x.question_id)));
+ const cat=$('builderCategory')?.value||'', search=($('builderSearch')?.value||'').trim().toLowerCase();
+ const pool=questions.filter(q=>(!cat||canonicalCat(q.category)===canonicalCat(cat))&&(!search||String(q.question_text||'').toLowerCase().includes(search)));
+ if($('builderSelectedInfo'))$('builderSelectedInfo').textContent=`এই Exam-এ বর্তমানে ${bn(selectedIds.size)}টি প্রশ্ন যুক্ত আছে। নিচের তালিকা থেকে আরও প্রশ্ন নির্বাচন করুন।`;
+ if($('builderQuestionList'))$('builderQuestionList').innerHTML=pool.map(q=>`<label style="display:block;padding:9px;border-bottom:1px solid #eee;cursor:pointer"><input class="builderQ" type="checkbox" value="${q.id}" ${selectedIds.has(String(q.id))?'checked':''} style="width:auto;margin-right:7px"><b>${safe(q.question_text)}</b><div class="small">${safe(q.category||'ক্যাটাগরি নেই')}</div></label>`).join('')||'<div class="small">কোনো প্রশ্ন পাওয়া যায়নি।</div>';
+}
+async function importJobToExam(){
+ const examId=$('builderExam').value,jobId=$('builderJobSource').value;if(!examId||!jobId){msg('builderMsg','Exam ও Job Solution নির্বাচন করুন','error');return}
+ const r=await db.from('job_solution_questions').select('question_id,question_order').eq('job_solution_id',jobId).order('question_order',{ascending:true});if(r.error){msg('builderMsg',r.error.message,'error');return}
+ const rows=(r.data||[]).map((x,i)=>({exam_id:examId,question_id:x.question_id,question_order:x.question_order||i+1}));if(!rows.length){msg('builderMsg','এই Job Solution-এ কোনো প্রশ্ন নেই।','error');return}
+ const e=await db.from('exam_questions').upsert(rows,{onConflict:'exam_id,question_id'});if(e.error){msg('builderMsg',e.error.message,'error');return}msg('builderMsg',`${bn(rows.length)}টি Job Solution প্রশ্ন Exam-এ যুক্ত হয়েছে।`,'success');renderExamBuilder();
+}
+async function saveSelectedBankQuestions(){
+ const examId=$('builderExam').value;if(!examId){msg('builderMsg','Exam নির্বাচন করুন','error');return}
+ const ids=[...document.querySelectorAll('.builderQ:checked')].map(x=>Number(x.value));if(!ids.length){msg('builderMsg','কমপক্ষে একটি প্রশ্ন নির্বাচন করুন','error');return}
+ const cur=await db.from('exam_questions').select('question_id,question_order').eq('exam_id',examId).order('question_order',{ascending:true});let next=(cur.data||[]).length+1;const existing=new Set((cur.data||[]).map(x=>String(x.question_id)));const rows=ids.filter(id=>!existing.has(String(id))).map(id=>({exam_id:examId,question_id:id,question_order:next++}));if(!rows.length){msg('builderMsg','নির্বাচিত প্রশ্নগুলো আগেই এই Exam-এ আছে।','error');return}
+ const r=await db.from('exam_questions').insert(rows);if(r.error){msg('builderMsg',r.error.message,'error');return}msg('builderMsg',`${bn(rows.length)}টি প্রশ্ন Exam-এ যুক্ত হয়েছে।`,'success');renderExamBuilder();
+}
+async function randomBankQuestions(){
+ const examId=$('builderExam').value,count=Math.max(1,Number($('builderRandomCount').value)||0),cat=$('builderCategory').value||'';if(!examId||!count){msg('builderMsg','Exam এবং Random প্রশ্নের সংখ্যা দিন','error');return}
+ const cur=await db.from('exam_questions').select('question_id,question_order').eq('exam_id',examId);if(cur.error){msg('builderMsg',cur.error.message,'error');return}const existing=new Set((cur.data||[]).map(x=>String(x.question_id)));let pool=questions.filter(q=>(!cat||canonicalCat(q.category)===canonicalCat(cat))&&!existing.has(String(q.id)));shuffle(pool);const chosen=pool.slice(0,count);if(!chosen.length){msg('builderMsg','এই শর্তে নতুন কোনো প্রশ্ন পাওয়া যায়নি।','error');return}let next=(cur.data||[]).length+1;const rows=chosen.map(q=>({exam_id:examId,question_id:q.id,question_order:next++}));const r=await db.from('exam_questions').insert(rows);if(r.error){msg('builderMsg',r.error.message,'error');return}msg('builderMsg',`${bn(rows.length)}টি Random প্রশ্ন যুক্ত হয়েছে।`,'success');renderExamBuilder();
+}
+async function clearExamQuestions(){const examId=$('builderExam').value;if(!examId)return;if(!confirm('এই Exam-এর নির্বাচিত প্রশ্ন তালিকা মুছে ফেলবেন? Question Bank-এর মূল প্রশ্ন মুছবে না।'))return;const r=await db.from('exam_questions').delete().eq('exam_id',examId);if(r.error){msg('builderMsg',r.error.message,'error');return}msg('builderMsg','এই Exam-এর প্রশ্ন তালিকা খালি হয়েছে। Question Bank অক্ষত আছে।','success');renderExamBuilder();}
+$('builderExam').onchange=renderExamBuilder;$('builderCategory').onchange=renderExamBuilder;$('builderSearch').oninput=renderExamBuilder;$('builderJobSource').onchange=()=>{};$('importJobToExamBtn').onclick=importJobToExam;$('saveSelectedBankBtn').onclick=saveSelectedBankQuestions;$('randomBankToExamBtn').onclick=randomBankQuestions;$('clearExamQuestionsBtn').onclick=clearExamQuestions;
+
 async function loadQuestions(){
  const {data,error}=await db.from("questions").select("*, exams(title)").order("question_order",{ascending:true});
  if(error){console.error(error);msg("manualMsg",error.message,"error");return}
- questions=(data||[]).map(q=>({...q,category:normCat(q.category)}));$("dashQuestionCount").textContent=questions.length;$("dashQuestionCount").textContent=bn(questions.length);fillCategory("bankCategory",true);renderBankCategories(canonicalCat($("bankCategory").value));renderBank();loadSettings();
+ questions=(data||[]).map(q=>({...q,category:normCat(q.category)}));$("dashQuestionCount").textContent=questions.length;$("dashQuestionCount").textContent=bn(questions.length);fillCategory("bankCategory",true);renderBankCategories(canonicalCat($("bankCategory").value));renderBank();loadSettings();renderExamBuilder();
 }
 $("manualAddBtn").onclick=()=>{$("manualBox").hidden=false;$("manualBox").classList.remove("hidden");$("bulkBox").hidden=true;$("bulkBox").classList.add("hidden")};
 $("bulkUploadBtn").onclick=()=>{$("bulkBox").hidden=false;$("bulkBox").classList.remove("hidden");$("manualBox").hidden=true;$("manualBox").classList.add("hidden")};
