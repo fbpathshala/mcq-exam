@@ -202,6 +202,12 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
       <div class="card">
         <h2>📊 Results</h2>
         <div class="toolbar"><select id="resultExam"></select><input id="resultSearch" placeholder="নাম/মোবাইল দিয়ে খুঁজুন"></div>
+        <div class="card" style="margin:10px 0 14px;background:#f8fbff;border-color:#dbeafe">
+          <h3 style="margin:0 0 6px">📥 Result Sheet Download</h3>
+          <p class="small" style="margin:0 0 10px">উপরের Exam/Search filter অনুযায়ী Result Sheet ডাউনলোড হবে। <b>মোবাইল নম্বর downloadable sheet-এ থাকবে না।</b></p>
+          <div class="actions"><button id="downloadResultExcelBtn">📊 Excel Download</button><button id="printResultBtn" class="light">🖨️ PDF / Print</button></div>
+          <div id="resultDownloadMsg" class="msg"></div>
+        </div>
         <div class="tableWrap"><table><thead><tr><th>Student</th><th>Facebook</th><th>District</th><th>Mobile</th><th>Exam</th><th>Score</th><th>%</th><th>Rank</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div>
       </div>
     </section>
@@ -427,6 +433,56 @@ function renderResults(){
  $('resultTable').innerHTML=f.map(r=>{const pct=r.total_questions?((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2):'0.00';return `<tr><td>${safe(r.students?.name)}</td><td>${safe(r.students?.facebook_name)}</td><td>${safe(r.students?.district)}</td><td>${safe(r.students?.mobile)}</td><td>${safe(r.exams?.title)}</td><td>${safe(r.score)}</td><td>${pct}%</td><td>${bn(rank.get(r.id)||'')}</td><td>${safe(r.submitted_at)}</td></tr>`}).join('');
 }
 $("resultExam").onchange=renderResults;$("resultSearch").oninput=renderResults;$("createJobBtn").onclick=createJob;
+
+function getFilteredResults(){
+ const ex=$("resultExam").value,s=$("resultSearch").value.trim().toLowerCase();
+ return results.filter(r=>(!ex||String(r.exam_id)===String(ex))&&(!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s)));
+}
+function getResultRankMap(rows){
+ const groups={};rows.forEach(r=>{const k=String(r.exam_id)+'|'+String(r.attempt_date||'');(groups[k]??=[]).push(r)});
+ Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)));
+ const rank=new Map();Object.values(groups).forEach(a=>{let prev=null,rankNo=0;a.forEach((r,i)=>{if(prev===null||Number(r.score)!==prev)rankNo=i+1;rank.set(r.id,rankNo);prev=Number(r.score)})});
+ return rank;
+}
+function getPublicResultRows(){
+ const rows=getFilteredResults(),rank=getResultRankMap(rows);
+ return rows.map((r,i)=>({
+  "ক্রম":i+1,
+  "শিক্ষার্থীর নাম":r.students?.name||"",
+  "Facebook ID":r.students?.facebook_name||"",
+  "জেলা":r.students?.district||"",
+  "পরীক্ষা":r.exams?.title||"",
+  "প্রাপ্ত নম্বর":Number(r.score||0),
+  "মোট প্রশ্ন":Number(r.total_questions||0),
+  "শতকরা":r.total_questions?Number(((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2)):0,
+  "অবস্থান":rank.get(r.id)||"",
+  "জমাদানের সময়":r.submitted_at||""
+ }));
+}
+function resultFileTitle(){
+ const id=$("resultExam").value;
+ const e=exams.find(x=>String(x.id)===String(id));
+ return (e?.title||"MCQ-Exam-All-Results").replace(/[\\/:*?"<>|]+/g,"_");
+}
+function downloadResultExcel(){
+ const rows=getPublicResultRows();
+ if(!rows.length){msg("resultDownloadMsg","ডাউনলোড করার মতো কোনো Result নেই।","error");return}
+ const ws=XLSX.utils.json_to_sheet(rows);
+ ws["A1"].v="ক্রম";
+ ws["H1"].v="শতকরা";
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Result Sheet");
+ XLSX.writeFile(wb,`${resultFileTitle()}-Result-Sheet.xlsx`);
+ msg("resultDownloadMsg",`${bn(rows.length)}টি Result Excel ফাইলে ডাউনলোড হয়েছে। মোবাইল নম্বর রাখা হয়নি।`,"success");
+}
+function printResultSheet(){
+ const rows=getPublicResultRows();
+ if(!rows.length){msg("resultDownloadMsg","প্রিন্ট করার মতো কোনো Result নেই।","error");return}
+ const title=$("resultExam").value?resultFileTitle():"MCQ Exam — Result Sheet";
+ const body=rows.map(r=>"<tr><td>"+bn(r["ক্রম"])+"</td><td>"+safe(r["শিক্ষার্থীর নাম"])+"</td><td>"+safe(r["Facebook ID"])+"</td><td>"+safe(r["জেলা"])+"</td><td>"+safe(r["পরীক্ষা"])+"</td><td>"+safe(r["প্রাপ্ত নম্বর"])+"</td><td>"+safe(r["শতকরা"])+"%</td><td>"+bn(r["অবস্থান"])+"</td><td>"+safe(r["জমাদানের সময়"])+"</td></tr>").join("");
+ const html='<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safe(title)+'</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;margin:18px;color:#111}h1{text-align:center;font-size:22px;margin:0 0 4px}p{text-align:center;color:#555;margin:0 0 8px}.privacy{text-align:center;font-size:12px;color:#666;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #999;padding:6px;text-align:left}th{background:#f1f5f9}@media print{@page{size:A4 landscape;margin:10mm}}</style></head><body><h1>'+safe(title)+'</h1><p>Result Sheet</p><div class="privacy">এই প্রকাশ্য Result Sheet-এ শিক্ষার্থীদের মোবাইল নম্বর দেখানো হয়নি।</div><table><thead><tr><th>ক্রম</th><th>শিক্ষার্থীর নাম</th><th>Facebook ID</th><th>জেলা</th><th>পরীক্ষা</th><th>প্রাপ্ত নম্বর</th><th>শতকরা</th><th>অবস্থান</th><th>জমাদানের সময়</th></tr></thead><tbody>'+body+'</tbody></table></body></html>';
+ const w=window.open("","_blank");if(!w){msg("resultDownloadMsg","নতুন window খোলার অনুমতি দিন।","error");return}w.document.open();w.document.write(html);w.document.close();setTimeout(()=>w.print(),400);
+}
+$("downloadResultExcelBtn").onclick=downloadResultExcel;$("printResultBtn").onclick=printResultSheet;
 
 function renderLinks(){$("linksList").innerHTML=exams.map(e=>`<div class="card"><b>${safe(e.title)}</b><div class="small" style="word-break:break-all">${safe(examLink(e.id))}</div><div class="actions"><button onclick="copyLink('${e.id}')">📋 Copy Link</button><button class="light" onclick="window.open('${examLink(e.id)}','_blank')">↗️ Open</button></div></div>`).join("")}
 
