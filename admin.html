@@ -135,8 +135,8 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
           <input id="examDate" type="date" title="Exam Date">
           <input id="startTime" type="time" title="Start Time">
           <input id="endTime" type="time" title="End Time">
-          <input id="examinerName" type="text" placeholder="পরীক্ষকের নাম">
         </div>
+        <label>পরীক্ষকের নাম<input id="examinerName" type="text" placeholder="পরীক্ষকের নাম"></label>
         <label><input id="showAnswers" type="checkbox" style="width:auto"> Submit-এর পর Correct Answer দেখাবে</label>
         <label><input id="randomQuestions" type="checkbox" style="width:auto"> Random Questions</label>
         <label><input id="randomOptions" type="checkbox" style="width:auto"> Random Options</label>
@@ -203,12 +203,6 @@ textarea{resize:vertical}button{background:var(--primary);color:#fff;border:0;fo
       <div class="card">
         <h2>📊 Results</h2>
         <div class="toolbar"><select id="resultExam"></select><input id="resultSearch" placeholder="নাম/মোবাইল দিয়ে খুঁজুন"></div>
-        <div class="card" style="margin:10px 0 14px;background:#f8fbff;border-color:#dbeafe">
-          <h3 style="margin:0 0 6px">📥 Result Sheet Download</h3>
-          <p class="small" style="margin:0 0 10px">উপরের Exam/Search filter অনুযায়ী Result Sheet ডাউনলোড হবে। <b>মোবাইল নম্বর downloadable sheet-এ থাকবে না।</b></p>
-          <div class="actions"><button id="downloadResultExcelBtn">📊 Excel Download</button><button id="printResultBtn" class="light">🖨️ PDF / Print</button></div>
-          <div id="resultDownloadMsg" class="msg"></div>
-        </div>
         <div class="tableWrap"><table><thead><tr><th>Student</th><th>Facebook</th><th>District</th><th>Mobile</th><th>Exam</th><th>Score</th><th>%</th><th>Rank</th><th>Submitted</th></tr></thead><tbody id="resultTable"></tbody></table></div>
       </div>
     </section>
@@ -424,67 +418,13 @@ async function loadResults(){
 }
 function renderResults(){
  const ex=$('resultExam').value,s=$('resultSearch').value.trim().toLowerCase();
- const rankBase=results.filter(r=>!ex||String(r.exam_id)===String(ex));
- const rank=getResultRankMap(rankBase);
- let f=rankBase.filter(r=>!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s));
- f.sort((x,y)=>(rank.get(x.id)||999999)-(rank.get(y.id)||999999));
+ let f=results.filter(r=>(!ex||String(r.exam_id)===String(ex))&&(!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s)));
+ const groups={};f.forEach(r=>{const k=String(r.exam_id)+'|'+String(r.attempt_date||'');(groups[k]??=[]).push(r)});
+ Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)));
+ const rank=new Map();Object.values(groups).forEach(a=>{let prev=null,rankNo=0;a.forEach((r,i)=>{if(prev===null||Number(r.score)!==prev)rankNo=i+1;rank.set(r.id,rankNo);prev=Number(r.score)})});
  $('resultTable').innerHTML=f.map(r=>{const pct=r.total_questions?((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2):'0.00';return `<tr><td>${safe(r.students?.name)}</td><td>${safe(r.students?.facebook_name)}</td><td>${safe(r.students?.district)}</td><td>${safe(r.students?.mobile)}</td><td>${safe(r.exams?.title)}</td><td>${safe(r.score)}</td><td>${pct}%</td><td>${bn(rank.get(r.id)||'')}</td><td>${safe(r.submitted_at)}</td></tr>`}).join('');
 }
 $("resultExam").onchange=renderResults;$("resultSearch").oninput=renderResults;$("createJobBtn").onclick=createJob;
-
-function getFilteredResults(){
- const ex=$("resultExam").value,s=$("resultSearch").value.trim().toLowerCase();
- return results.filter(r=>(!ex||String(r.exam_id)===String(ex))&&(!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s)));
-}
-function getResultRankMap(rows){
- const groups={};rows.forEach(r=>{const k=String(r.exam_id)+'|'+String(r.attempt_date||'');(groups[k]??=[]).push(r)});
- Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)||Number(x.id)-Number(y.id)));
- const rank=new Map();Object.values(groups).forEach(a=>a.forEach((r,i)=>rank.set(r.id,i+1)));
- return rank;
-}
-function getPublicResultRows(){
- const base=getFilteredResults();
- const ex=$("resultExam").value;
- const rankBase=results.filter(r=>!ex||String(r.exam_id)===String(ex));
- const rank=getResultRankMap(rankBase);
- const rows=base.slice().sort((x,y)=>(rank.get(x.id)||999999)-(rank.get(y.id)||999999));
- return rows.map((r,i)=>({
-  "ক্রম":i+1,
-  "শিক্ষার্থীর নাম":r.students?.name||"",
-  "Facebook ID":r.students?.facebook_name||"",
-  "জেলা":r.students?.district||"",
-  "পরীক্ষা":r.exams?.title||"",
-  "প্রাপ্ত নম্বর":Number(r.score||0),
-  "মোট প্রশ্ন":Number(r.total_questions||0),
-  "শতকরা":r.total_questions?Number(((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2)):0,
-  "অবস্থান":rank.get(r.id)||"",
-  "জমাদানের সময়":r.submitted_at||""
- }));
-}
-function resultFileTitle(){
- const id=$("resultExam").value;
- const e=exams.find(x=>String(x.id)===String(id));
- return (e?.title||"MCQ-Exam-All-Results").replace(/[\\/:*?"<>|]+/g,"_");
-}
-function downloadResultExcel(){
- const rows=getPublicResultRows();
- if(!rows.length){msg("resultDownloadMsg","ডাউনলোড করার মতো কোনো Result নেই।","error");return}
- const ws=XLSX.utils.json_to_sheet(rows);
- ws["A1"].v="ক্রম";
- ws["H1"].v="শতকরা";
- const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,"Result Sheet");
- XLSX.writeFile(wb,`${resultFileTitle()}-Result-Sheet.xlsx`);
- msg("resultDownloadMsg",`${bn(rows.length)}টি Result Excel ফাইলে ডাউনলোড হয়েছে। মোবাইল নম্বর রাখা হয়নি।`,"success");
-}
-function printResultSheet(){
- const rows=getPublicResultRows();
- if(!rows.length){msg("resultDownloadMsg","প্রিন্ট করার মতো কোনো Result নেই।","error");return}
- const title=$("resultExam").value?resultFileTitle():"MCQ Exam — Result Sheet";
- const body=rows.map(r=>"<tr><td>"+bn(r["ক্রম"])+"</td><td>"+safe(r["শিক্ষার্থীর নাম"])+"</td><td>"+safe(r["Facebook ID"])+"</td><td>"+safe(r["জেলা"])+"</td><td>"+safe(r["পরীক্ষা"])+"</td><td>"+safe(r["প্রাপ্ত নম্বর"])+"</td><td>"+safe(r["শতকরা"])+"%</td><td>"+bn(r["অবস্থান"])+"</td><td>"+safe(r["জমাদানের সময়"])+"</td></tr>").join("");
- const html='<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+safe(title)+'</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;margin:18px;color:#111}h1{text-align:center;font-size:22px;margin:0 0 4px}p{text-align:center;color:#555;margin:0 0 8px}.privacy{text-align:center;font-size:12px;color:#666;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #999;padding:6px;text-align:left}th{background:#f1f5f9}@media print{@page{size:A4 landscape;margin:10mm}}</style></head><body><h1>'+safe(title)+'</h1><p>Result Sheet</p><div class="privacy">এই প্রকাশ্য Result Sheet-এ শিক্ষার্থীদের মোবাইল নম্বর দেখানো হয়নি।</div><table><thead><tr><th>ক্রম</th><th>শিক্ষার্থীর নাম</th><th>Facebook ID</th><th>জেলা</th><th>পরীক্ষা</th><th>প্রাপ্ত নম্বর</th><th>শতকরা</th><th>অবস্থান</th><th>জমাদানের সময়</th></tr></thead><tbody>'+body+'</tbody></table></body></html>';
- const w=window.open("","_blank");if(!w){msg("resultDownloadMsg","নতুন window খোলার অনুমতি দিন।","error");return}w.document.open();w.document.write(html);w.document.close();setTimeout(()=>w.print(),400);
-}
-$("downloadResultExcelBtn").onclick=downloadResultExcel;$("printResultBtn").onclick=printResultSheet;
 
 function renderLinks(){$("linksList").innerHTML=exams.map(e=>`<div class="card"><b>${safe(e.title)}</b><div class="small" style="word-break:break-all">${safe(examLink(e.id))}</div><div class="actions"><button onclick="copyLink('${e.id}')">📋 Copy Link</button><button class="light" onclick="window.open('${examLink(e.id)}','_blank')">↗️ Open</button></div></div>`).join("")}
 
@@ -549,27 +489,22 @@ $("uploadBtn").onclick=async()=>{
 
 async function loadDocxFallback(){if(window.docx)return window.docx;for(const url of ['https://unpkg.com/docx@8.5.0/build/index.umd.js','https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js']){try{await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src=url;sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc)});if(window.docx)return window.docx;}catch(e){}}return null;}
 
-async function getExamSettings(examId){
- try{const r=await db.from('exam_settings').select('*').eq('exam_id',examId).maybeSingle();return r.data||{};}catch(_){return {}}
-}
-
 async function downloadPaperDocx(answers){
  const id=$(answers?'answerExam':'paperExam').value;if(!id){alert('Exam নির্বাচন করুন');return}
  let D=window.docx;if(!D){await loadDocxFallback();D=window.docx}if(!D){alert('DOCX library load হয়নি। ইন্টারনেট চালু রেখে আবার চেষ্টা করুন।');return}
  const e=exams.find(x=>String(x.id)===String(id));const qs=questions.filter(q=>String(q.exam_id)===String(id)).sort((a,b)=>(a.question_order||0)-(b.question_order||0));
- const set=await getExamSettings(id); const examiner=set?.examiner_name||''; const children=[new D.Paragraph({text:String(e?.title||'MCQ Exam'),heading:D.HeadingLevel.HEADING_1}),new D.Paragraph('পরীক্ষক: '+(examiner||'—')),new D.Paragraph('সময়: '+String(e?.duration_minutes||20)+' মিনিট')];
+ const children=[new D.Paragraph({text:String(e?.title||'MCQ Exam'),heading:D.HeadingLevel.HEADING_1}),new D.Paragraph('সময়: '+String(e?.duration_minutes||20)+' মিনিট')];
  qs.forEach((q,i)=>{children.push(new D.Paragraph((i+1)+'. '+String(q.question_text||'')));children.push(new D.Paragraph('ক) '+String(q.option_a||'')));children.push(new D.Paragraph('খ) '+String(q.option_b||'')));children.push(new D.Paragraph('গ) '+String(q.option_c||'')));children.push(new D.Paragraph('ঘ) '+String(q.option_d||'')));if(answers){children.push(new D.Paragraph('সঠিক উত্তর: '+String(answerBn(q.correct_option)))); if(q.explanation)children.push(new D.Paragraph('ব্যাখ্যা: '+String(q.explanation)));}});
  const doc=new D.Document({sections:[{children}]});const blob=await D.Packer.toBlob(doc);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(answers?'answer-paper-':'question-paper-')+id+'.docx';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
-async function paperHTML(examId,answers=false){
+function paperHTML(examId,answers=false){
  const e=exams.find(x=>String(x.id)===String(examId));const qs=questions.filter(q=>String(q.exam_id)===String(examId)).sort((a,b)=>(a.question_order||0)-(b.question_order||0));
  if(!e)return"";
- const set=await getExamSettings(examId), examiner=set?.examiner_name||'';
- return `<!doctype html><html lang="bn"><head><meta charset="UTF-8"><title>${safe(e.title)}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;padding:28px;line-height:1.65}h1{text-align:center}.meta{text-align:center;margin-bottom:20px}.q{margin:16px 0}.opts{display:grid;grid-template-columns:1fr 1fr;gap:5px 25px}@media(max-width:650px){.opts{grid-template-columns:1fr}}</style></head><body><h1>${safe(e.title)}</h1><div class="meta"><b>পরীক্ষক:</b> ${safe(examiner||'—')} &nbsp; | &nbsp; <b>সময়:</b> ${safe(e.duration_minutes||20)} মিনিট &nbsp; | &nbsp; <b>মোট প্রশ্ন:</b> ${bn(qs.length)}</div>${qs.map((q,i)=>`<div class="q"><b>${bn(i+1)}. ${safe(q.question_text)}</b><div class="opts"><div>ক) ${safe(q.option_a)}</div><div>খ) ${safe(q.option_b)}</div><div>গ) ${safe(q.option_c)}</div><div>ঘ) ${safe(q.option_d)}</div></div>${answers?`<div><b>সঠিক উত্তর: ${answerBn(q.correct_option)}</b></div>${q.explanation?`<div><b>ব্যাখ্যা:</b> ${safe(q.explanation)}</div>`:""}`:""}</div>`).join("")}</body></html>`;
+ return `<!doctype html><html lang="bn"><head><meta charset="UTF-8"><title>${safe(e.title)}</title><style>body{font-family:Arial,"Noto Sans Bengali",sans-serif;padding:28px;line-height:1.65}h1{text-align:center}.q{margin:16px 0}.opts{display:grid;grid-template-columns:1fr 1fr;gap:5px 25px}@media(max-width:650px){.opts{grid-template-columns:1fr}}</style></head><body><h1>${safe(e.title)}</h1><p>সময়: ${safe(e.duration_minutes||20)} মিনিট &nbsp; | &nbsp; মোট প্রশ্ন: ${bn(qs.length)}</p>${qs.map((q,i)=>`<div class="q"><b>${bn(i+1)}. ${safe(q.question_text)}</b><div class="opts"><div>ক) ${safe(q.option_a)}</div><div>খ) ${safe(q.option_b)}</div><div>গ) ${safe(q.option_c)}</div><div>ঘ) ${safe(q.option_d)}</div></div>${answers?`<div><b>সঠিক উত্তর: ${answerBn(q.correct_option)}</b></div>${q.explanation?`<div><b>ব্যাখ্যা:</b> ${safe(q.explanation)}</div>`:""}`:""}</div>`).join("")}</body></html>`;
 }
-async function printPaper(answers){
+function printPaper(answers){
  const id=$(answers?"answerExam":"paperExam").value;if(!id){alert("Exam নির্বাচন করুন");return}
- const w=window.open("","_blank");w.document.write(await paperHTML(id,answers));w.document.close();w.focus();setTimeout(()=>w.print(),400);
+ const w=window.open("","_blank");w.document.write(paperHTML(id,answers));w.document.close();w.focus();setTimeout(()=>w.print(),400);
 }
 $("printPaperBtn").onclick=()=>printPaper(false);$("printAnswerBtn").onclick=()=>printPaper(true);$("docxPaperBtn").onclick=()=>downloadPaperDocx(false);$("docxAnswerBtn").onclick=()=>downloadPaperDocx(true);
 </script>
