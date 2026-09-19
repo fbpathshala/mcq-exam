@@ -426,10 +426,10 @@ async function loadResults(){
 }
 function renderResults(){
  const ex=$('resultExam').value,s=$('resultSearch').value.trim().toLowerCase();
- let f=results.filter(r=>(!ex||String(r.exam_id)===String(ex))&&(!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s)));
- const groups={};f.forEach(r=>{const k=String(r.exam_id)+'|'+String(r.attempt_date||'');(groups[k]??=[]).push(r)});
- Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)));
- const rank=new Map();Object.values(groups).forEach(a=>{let prev=null,rankNo=0;a.forEach((r,i)=>{if(prev===null||Number(r.score)!==prev)rankNo=i+1;rank.set(r.id,rankNo);prev=Number(r.score)})});
+ const rankBase=results.filter(r=>!ex||String(r.exam_id)===String(ex));
+ const rank=getResultRankMap(rankBase);
+ let f=rankBase.filter(r=>!s||`${r.students?.name||''} ${r.students?.mobile||''}`.toLowerCase().includes(s));
+ f.sort((x,y)=>(rank.get(x.id)||999999)-(rank.get(y.id)||999999));
  $('resultTable').innerHTML=f.map(r=>{const pct=r.total_questions?((Number(r.score||0)/Number(r.total_questions))*100).toFixed(2):'0.00';return `<tr><td>${safe(r.students?.name)}</td><td>${safe(r.students?.facebook_name)}</td><td>${safe(r.students?.district)}</td><td>${safe(r.students?.mobile)}</td><td>${safe(r.exams?.title)}</td><td>${safe(r.score)}</td><td>${pct}%</td><td>${bn(rank.get(r.id)||'')}</td><td>${safe(r.submitted_at)}</td></tr>`}).join('');
 }
 $("resultExam").onchange=renderResults;$("resultSearch").oninput=renderResults;$("createJobBtn").onclick=createJob;
@@ -440,12 +440,16 @@ function getFilteredResults(){
 }
 function getResultRankMap(rows){
  const groups={};rows.forEach(r=>{const k=String(r.exam_id)+'|'+String(r.attempt_date||'');(groups[k]??=[]).push(r)});
- Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)));
- const rank=new Map();Object.values(groups).forEach(a=>{let prev=null,rankNo=0;a.forEach((r,i)=>{if(prev===null||Number(r.score)!==prev)rankNo=i+1;rank.set(r.id,rankNo);prev=Number(r.score)})});
+ Object.values(groups).forEach(a=>a.sort((x,y)=>Number(y.score||0)-Number(x.score||0)||new Date(x.submitted_at)-new Date(y.submitted_at)||Number(x.id)-Number(y.id)));
+ const rank=new Map();Object.values(groups).forEach(a=>a.forEach((r,i)=>rank.set(r.id,i+1)));
  return rank;
 }
 function getPublicResultRows(){
- const rows=getFilteredResults(),rank=getResultRankMap(rows);
+ const base=getFilteredResults();
+ const ex=$("resultExam").value;
+ const rankBase=results.filter(r=>!ex||String(r.exam_id)===String(ex));
+ const rank=getResultRankMap(rankBase);
+ const rows=base.slice().sort((x,y)=>(rank.get(x.id)||999999)-(rank.get(y.id)||999999));
  return rows.map((r,i)=>({
   "ক্রম":i+1,
   "শিক্ষার্থীর নাম":r.students?.name||"",
